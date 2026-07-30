@@ -91,15 +91,21 @@ export const initialHives: Hive[] = [
 ];
 
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Day-truncated "now" so SSR and client render identical values. */
+function today() {
+  return new Date(Math.floor(Date.now() / DAY_MS) * DAY_MS);
+}
 
 /** Progress of the 3-year engagement, 0 → 1. */
-export function engagementProgress(startDate: string, now = new Date()): number {
+export function engagementProgress(startDate: string, now = today()): number {
   const start = new Date(startDate).getTime();
   const elapsed = now.getTime() - start;
   return Math.min(1, Math.max(0, elapsed / (3 * YEAR_MS)));
 }
 
-export function monthsRemaining(startDate: string, now = new Date()): number {
+export function monthsRemaining(startDate: string, now = today()): number {
   const end = new Date(startDate).getTime() + 3 * YEAR_MS;
   return Math.max(0, Math.round((end - now.getTime()) / (YEAR_MS / 12)));
 }
