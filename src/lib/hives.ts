@@ -1,5 +1,7 @@
 export type HiveStatus = "active" | "pending" | "renewal";
 
+export type PlacementType = "friche" | "site" | "partage";
+
 export type Hive = {
   id: string;
   name: string;
@@ -8,7 +10,10 @@ export type Hive = {
   client: string;
   startDate: string; // ISO
   revenue: number;
-  colonies: number;
+  hiveCount: number;
+  placement: PlacementType;
+  /** Détail propre au type d'implantation (surface, type d'espace, apiculteur…). */
+  placementDetail: string;
   status: HiveStatus;
 };
 
@@ -21,74 +26,43 @@ export const REGIONS = [
   "Provence-Alpes-Côte d'Azur",
 ];
 
-export const initialHives: Hive[] = [
+export const PLACEMENTS: Array<{
+  id: PlacementType;
+  label: string;
+  description: string;
+  detailLabel: string;
+  detailPlaceholder: string;
+}> = [
   {
-    id: "IZG-001",
-    name: "Rucher des Cèdres",
-    site: "Toit Siège Lyon",
-    region: "Auvergne-Rhône-Alpes",
-    client: "Groupe Verdier",
-    startDate: "2024-04-12",
-    revenue: 4800,
-    colonies: 6,
-    status: "active",
+    id: "friche",
+    label: "Friche",
+    description: "Terrain naturel ou friche réhabilitée en zone de butinage.",
+    detailLabel: "Surface & commune",
+    detailPlaceholder: "2,5 ha · Friche de Fareins (01)",
   },
   {
-    id: "IZG-002",
-    name: "Rucher Garrigue",
-    site: "Campus Montpellier",
-    region: "Occitanie",
-    client: "NovaTech",
-    startDate: "2023-06-02",
-    revenue: 7200,
-    colonies: 9,
-    status: "renewal",
+    id: "site",
+    label: "Sur site client",
+    description: "Ruches installées directement chez le client (toit, jardin, parking végétalisé).",
+    detailLabel: "Type d'espace",
+    detailPlaceholder: "Toiture-terrasse du siège, accès sécurisé",
   },
   {
-    id: "IZG-003",
-    name: "Rucher Armor",
-    site: "Site logistique Rennes",
-    region: "Bretagne",
-    client: "Mareva Logistics",
-    startDate: "2025-03-21",
-    revenue: 3100,
-    colonies: 4,
-    status: "active",
-  },
-  {
-    id: "IZG-004",
-    name: "Rucher Pins Blancs",
-    site: "Domaine Bordeaux Sud",
-    region: "Nouvelle-Aquitaine",
-    client: "Cave Lascombe",
-    startDate: "2026-01-15",
-    revenue: 1500,
-    colonies: 3,
-    status: "pending",
-  },
-  {
-    id: "IZG-005",
-    name: "Rucher Vosges",
-    site: "Usine Strasbourg",
-    region: "Grand Est",
-    client: "Alsatis Industries",
-    startDate: "2024-09-08",
-    revenue: 5600,
-    colonies: 7,
-    status: "active",
-  },
-  {
-    id: "IZG-006",
-    name: "Rucher Calanques",
-    site: "Marina Marseille",
-    region: "Provence-Alpes-Côte d'Azur",
-    client: "Port Azur",
-    startDate: "2023-11-27",
-    revenue: 6400,
-    colonies: 8,
-    status: "renewal",
+    id: "partage",
+    label: "Rucher partagé",
+    description: "Ruches hébergées sur un rucher collectif IziGreen géré par un apiculteur partenaire.",
+    detailLabel: "Rucher & apiculteur partenaire",
+    detailPlaceholder: "Rucher des Dombes · Apiculteur Julien M.",
   },
 ];
+
+export const placementLabel: Record<PlacementType, string> = {
+  friche: "Friche",
+  site: "Sur site client",
+  partage: "Rucher partagé",
+};
+
+export const initialHives: Hive[] = [];
 
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
