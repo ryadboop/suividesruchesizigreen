@@ -58,7 +58,7 @@ function Dashboard() {
   );
 
   const revenue = hives.reduce((sum, h) => sum + h.revenue, 0);
-  const colonies = hives.reduce((sum, h) => sum + h.colonies, 0);
+  const hiveCount = hives.reduce((sum, h) => sum + h.hiveCount, 0);
   const avgProgress =
     hives.reduce((sum, h) => sum + engagementProgress(h.startDate), 0) / (hives.length || 1);
 
@@ -69,7 +69,7 @@ function Dashboard() {
     ]);
     celebrate();
     toast.success(`${hive.name} rejoint le réseau IziGreen 🐝`, {
-      description: `${hive.colonies} colonies · ${formatEuro(hive.revenue)} de CA annuel`,
+      description: `${hive.hiveCount} ruche(s) · ${formatEuro(hive.revenue)} de CA annuel`,
     });
   };
 
@@ -111,13 +111,13 @@ function Dashboard() {
           label="Ruchers actifs"
           delay={0.06}
           value={<CountUp value={hives.length} />}
-          hint={`${colonies} colonies installées`}
+          hint={`${hiveCount} ruche${hiveCount > 1 ? "s" : ""} installée${hiveCount > 1 ? "s" : ""}`}
         />
         <KpiCard
           icon={<Leaf className="size-5" />}
           label="Abeilles parrainées"
           delay={0.12}
-          value={<CountUp value={colonies * 40000} format={(n) => Math.round(n).toLocaleString("fr-FR")} />}
+          value={<CountUp value={hiveCount * 40000} format={(n) => Math.round(n).toLocaleString("fr-FR")} />}
           hint="Impact pollinisation local"
         />
         <KpiCard

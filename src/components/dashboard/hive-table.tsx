@@ -6,6 +6,7 @@ import {
   engagementProgress,
   formatEuro,
   monthsRemaining,
+  placementLabel,
   statusLabel,
   type Hive,
 } from "@/lib/hives";
@@ -49,7 +50,7 @@ export function HiveTable({ hives }: { hives: Hive[] }) {
                   <div className="leading-tight">
                     <p className="font-semibold text-foreground">{hive.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {hive.site} · {hive.colonies} colonies
+                      {hive.site} · {hive.hiveCount} ruche{hive.hiveCount > 1 ? "s" : ""} · {placementLabel[hive.placement]}
                     </p>
                   </div>
                 </div>
@@ -87,7 +88,7 @@ export function HiveTable({ hives }: { hives: Hive[] }) {
 
         {hives.length === 0 && (
           <p className="px-6 py-14 text-center text-sm text-muted-foreground">
-            Aucune ruche ne correspond à ce filtre.
+            Aucune ruche pour le moment · ajoutez votre première ruche pour démarrer.
           </p>
         )}
       </div>
