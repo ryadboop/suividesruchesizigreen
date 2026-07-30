@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,8 @@ export function EngagementRing({ progress, size = 48, label, sublabel, className
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const pct = Math.round(progress * 100);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <div className={cn("flex items-center gap-3", className)}>
@@ -27,6 +30,7 @@ export function EngagementRing({ progress, size = 48, label, sublabel, className
             strokeWidth={stroke}
             className="stroke-accent"
           />
+          {mounted ? (
           <motion.circle
             cx={size / 2}
             cy={size / 2}
@@ -40,6 +44,7 @@ export function EngagementRing({ progress, size = 48, label, sublabel, className
             animate={{ strokeDashoffset: c - c * progress }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           />
+          ) : null}
         </svg>
         <span
           className="absolute inset-0 flex items-center justify-center font-display font-semibold text-foreground"
