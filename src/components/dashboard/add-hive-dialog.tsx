@@ -14,30 +14,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { REGIONS, type Hive } from "@/lib/hives";
+import { PLACEMENTS, REGIONS, type Hive, type PlacementType } from "@/lib/hives";
 import { cn } from "@/lib/utils";
 
 const steps = [
-  { title: "Le rucher", subtitle: "Identité de la ruche", icon: Hexagon },
-  { title: "L'implantation", subtitle: "Client & localisation", icon: MapPin },
+  { title: "Le rucher", subtitle: "Identité & nombre de ruches", icon: Hexagon },
+  { title: "L'implantation", subtitle: "Client & lieu d'installation", icon: MapPin },
   { title: "L'engagement", subtitle: "Contrat 3 ans", icon: Wallet },
 ];
 
 type Props = { onCreate: (hive: Omit<Hive, "id">) => void };
 
+const emptyForm = {
+  name: "",
+  site: "",
+  client: "",
+  region: REGIONS[0],
+  placement: "site" as PlacementType,
+  placementDetail: "",
+  startDate: new Date().toISOString().slice(0, 10),
+  hiveCount: 4,
+  revenue: 3200,
+};
+
 export function AddHiveDialog({ onCreate }: Props) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [form, setForm] = useState({
-    name: "",
-    site: "",
-    client: "",
-    region: REGIONS[0],
-    startDate: new Date().toISOString().slice(0, 10),
-    colonies: 4,
-    revenue: 3200,
-  });
+  const [form, setForm] = useState(emptyForm);
+
+  const placement = PLACEMENTS.find((p) => p.id === form.placement)!;
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -50,15 +56,7 @@ export function AddHiveDialog({ onCreate }: Props) {
   const reset = () => {
     setStep(0);
     setDirection(1);
-    setForm({
-      name: "",
-      site: "",
-      client: "",
-      region: REGIONS[0],
-      startDate: new Date().toISOString().slice(0, 10),
-      colonies: 4,
-      revenue: 3200,
-    });
+    setForm({ ...emptyForm, startDate: new Date().toISOString().slice(0, 10) });
   };
 
   const submit = () => {
@@ -67,8 +65,10 @@ export function AddHiveDialog({ onCreate }: Props) {
       site: form.site.trim(),
       client: form.client.trim(),
       region: form.region,
+      placement: form.placement,
+      placementDetail: form.placementDetail.trim(),
       startDate: form.startDate,
-      colonies: form.colonies,
+      hiveCount: form.hiveCount,
       revenue: form.revenue,
       status: new Date(form.startDate) > new Date() ? "pending" : "active",
     });
@@ -91,10 +91,10 @@ export function AddHiveDialog({ onCreate }: Props) {
           <Sparkles /> Ajouter une ruche
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass-panel max-w-lg gap-0 rounded-3xl border-0 p-0 sm:rounded-3xl">
+      <DialogContent className="max-w-lg gap-0 overflow-hidden rounded-3xl border border-border/60 bg-card p-0 shadow-2xl sm:rounded-3xl">
         <DialogTitle className="sr-only">Ajouter une ruche</DialogTitle>
 
-        <div className="gradient-forest rounded-t-3xl px-6 pb-7 pt-6 text-primary-foreground">
+        <div className="gradient-forest px-6 pb-7 pt-6 text-primary-foreground">
           <p className="text-xs uppercase tracking-[0.2em] opacity-70">
             Étape {step + 1} / {steps.length}
           </p>
@@ -126,7 +126,7 @@ export function AddHiveDialog({ onCreate }: Props) {
           </div>
         </div>
 
-        <div className="min-h-[262px] px-6 py-6">
+        <div className="min-h-[300px] bg-card px-6 py-6">
           <AnimatePresence mode="wait" initial={false} custom={direction}>
             <motion.div
               key={step}
@@ -147,20 +147,21 @@ export function AddHiveDialog({ onCreate }: Props) {
                       placeholder="Rucher des Tilleuls"
                       value={form.name}
                       onChange={(e) => set("name", e.target.value)}
-                      className="h-11 rounded-xl"
+                      className="h-11 rounded-xl bg-background"
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label>Nombre de colonies · {form.colonies}</Label>
+                    <Label>Nombre de ruches installées · {form.hiveCount}</Label>
                     <Slider
-                      value={[form.colonies]}
+                      value={[form.hiveCount]}
                       min={1}
                       max={20}
                       step={1}
-                      onValueChange={([v]) => set("colonies", v)}
+                      onValueChange={([v]) => set("hiveCount", v)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Environ {(form.colonies * 40000).toLocaleString("fr-FR")} abeilles pollinisatrices.
+                      Soit environ {(form.hiveCount * 40000).toLocaleString("fr-FR")} abeilles
+                      pollinisatrices (une colonie par ruche).
                     </p>
                   </div>
                 </>
@@ -176,33 +177,69 @@ export function AddHiveDialog({ onCreate }: Props) {
                       placeholder="Groupe Verdier"
                       value={form.client}
                       onChange={(e) => set("client", e.target.value)}
-                      className="h-11 rounded-xl"
+                      className="h-11 rounded-xl bg-background"
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="site">Site d'implantation</Label>
+                    <Label>Lieu d'installation</Label>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {PLACEMENTS.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => set("placement", p.id)}
+                          className={cn(
+                            "rounded-2xl border px-3 py-2.5 text-left text-sm font-medium transition-all duration-300",
+                            form.placement === p.id
+                              ? "border-primary bg-primary/10 text-primary shadow-sm"
+                              : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                          )}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{placement.description}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="detail">{placement.detailLabel}</Label>
                     <Input
-                      id="site"
-                      placeholder="Toit du siège, Lyon"
-                      value={form.site}
-                      onChange={(e) => set("site", e.target.value)}
-                      className="h-11 rounded-xl"
+                      id="detail"
+                      placeholder={placement.detailPlaceholder}
+                      value={form.placementDetail}
+                      onChange={(e) => set("placementDetail", e.target.value)}
+                      className="h-11 rounded-xl bg-background"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Région</Label>
-                    <Select value={form.region} onValueChange={(v) => set("region", v)}>
-                      <SelectTrigger className="h-11 rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {REGIONS.map((r) => (
-                          <SelectItem key={r} value={r}>
-                            {r}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="site">Commune / site</Label>
+                      <Input
+                        id="site"
+                        placeholder="Fareins (01)"
+                        value={form.site}
+                        onChange={(e) => set("site", e.target.value)}
+                        className="h-11 rounded-xl bg-background"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Région</Label>
+                      <Select value={form.region} onValueChange={(v) => set("region", v)}>
+                        <SelectTrigger className="h-11 rounded-xl bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {REGIONS.map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {r}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </>
               )}
@@ -216,7 +253,7 @@ export function AddHiveDialog({ onCreate }: Props) {
                       type="date"
                       value={form.startDate}
                       onChange={(e) => set("startDate", e.target.value)}
-                      className="h-11 rounded-xl"
+                      className="h-11 rounded-xl bg-background"
                     />
                   </div>
                   <div className="space-y-3">
@@ -241,7 +278,7 @@ export function AddHiveDialog({ onCreate }: Props) {
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-border/60 px-6 py-4">
+        <div className="flex items-center justify-between gap-3 border-t border-border/60 bg-card px-6 py-4">
           <Button
             variant="ghost"
             onClick={() => {
