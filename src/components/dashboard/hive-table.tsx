@@ -78,7 +78,7 @@ export function HiveTable({
                   sublabel={`Depuis le ${new Date(hive.startDate).toLocaleDateString("fr-FR")}`}
                 />
 
-                <div className="md:text-right">
+                <div className="flex items-center gap-1 md:justify-end">
                   <span
                     className={cn(
                       "inline-flex rounded-full px-3 py-1 text-xs font-semibold",
@@ -87,6 +87,7 @@ export function HiveTable({
                   >
                     {statusLabel[hive.status]}
                   </span>
+                  <DeleteHiveDialog hive={hive} onDelete={() => onDelete(hive.id)} />
                 </div>
               </motion.div>
             );
