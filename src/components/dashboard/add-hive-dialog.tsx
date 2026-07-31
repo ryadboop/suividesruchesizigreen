@@ -77,8 +77,6 @@ export function AddHiveDialog({ onCreate }: Props) {
       placementDetail: form.placementDetail.trim(),
       startDate: form.startDate,
       hiveCount: form.hiveCount,
-      revenue: form.revenue,
-      status: new Date(form.startDate) > new Date() ? "pending" : "active",
     });
     setOpen(false);
     setTimeout(reset, 300);
