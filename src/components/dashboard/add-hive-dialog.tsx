@@ -56,6 +56,15 @@ export function AddHiveDialog({ onCreate }: Props) {
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  const selectPlacement = (id: PlacementType) =>
+    setForm((f) => ({
+      ...f,
+      placement: id,
+      placementDetail: id === "friche" ? "" : f.placementDetail,
+      site: id === "friche" ? FAREINS_SITE : f.site === FAREINS_SITE ? "" : f.site,
+      region: id === "friche" ? FAREINS_REGION : f.region,
+    }));
+
   const canContinue =
     (step === 0 && form.name.trim().length > 1) ||
     (step === 1 && form.client.trim().length > 1 && form.site.trim().length > 1) ||
