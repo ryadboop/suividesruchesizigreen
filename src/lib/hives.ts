@@ -26,41 +26,37 @@ export const REGIONS = [
   "Provence-Alpes-Côte d'Azur",
 ];
 
+export const FAREINS_SITE = "Fareins (01)";
+export const FAREINS_REGION = "Auvergne-Rhône-Alpes";
+
 export const PLACEMENTS: Array<{
   id: PlacementType;
   label: string;
-  description: string;
-  detailLabel: string;
-  detailPlaceholder: string;
+  /** Adresse exacte demandée uniquement pour ces implantations. */
+  needsAddress: boolean;
+  addressPlaceholder?: string;
 }> = [
-  {
-    id: "friche",
-    label: "Friche",
-    description: "Terrain naturel ou friche réhabilitée en zone de butinage.",
-    detailLabel: "Surface & commune",
-    detailPlaceholder: "2,5 ha · Friche de Fareins (01)",
-  },
+  { id: "friche", label: "Fareins", needsAddress: false },
   {
     id: "site",
-    label: "Sur site client",
-    description: "Ruches installées directement chez le client (toit, jardin, parking végétalisé).",
-    detailLabel: "Type d'espace",
-    detailPlaceholder: "Toiture-terrasse du siège, accès sécurisé",
+    label: "Sur site",
+    needsAddress: true,
+    addressPlaceholder: "12 rue des Acacias, 69003 Lyon",
   },
   {
     id: "partage",
     label: "Rucher partagé",
-    description: "Ruches hébergées sur un rucher collectif IziGreen géré par un apiculteur partenaire.",
-    detailLabel: "Rucher & apiculteur partenaire",
-    detailPlaceholder: "Rucher des Dombes · Apiculteur Julien M.",
+    needsAddress: true,
+    addressPlaceholder: "Rucher des Dombes, 01330 Villars-les-Dombes",
   },
 ];
 
 export const placementLabel: Record<PlacementType, string> = {
-  friche: "Friche",
-  site: "Sur site client",
+  friche: "Fareins",
+  site: "Sur site",
   partage: "Rucher partagé",
 };
+
 
 export const initialHives: Hive[] = [];
 
