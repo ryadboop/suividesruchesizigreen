@@ -91,6 +91,22 @@ export function monthsRemaining(startDate: string, now = today()): number {
   return Math.max(0, Math.round((end - now.getTime()) / (YEAR_MS / 12)));
 }
 
+/** Date de fin de l'engagement de 3 ans. */
+export function engagementEnd(startDate: string): Date {
+  return new Date(new Date(startDate).getTime() + 3 * YEAR_MS);
+}
+
+/** L'engagement de 3 ans est-il arrivé à son terme ? */
+export function engagementCompleted(startDate: string, now = today()): boolean {
+  return engagementEnd(startDate).getTime() <= now.getTime();
+}
+
+/** Statut calculé : à installer, en cours ou renouvellement (fin des 3 ans). */
+export function computeStatus(startDate: string, now = today()): HiveStatus {
+  if (new Date(startDate).getTime() > now.getTime()) return "pending";
+  return engagementCompleted(startDate, now) ? "renewal" : "active";
+}
+
 export const statusLabel: Record<HiveStatus, string> = {
   active: "En cours",
   pending: "À installer",
