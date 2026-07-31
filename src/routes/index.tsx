@@ -201,7 +201,7 @@ function Dashboard() {
       </section>
 
       <section className="mt-4">
-        <HiveTable hives={visible} />
+        <HiveTable hives={visible} onDelete={handleDelete} />
       </section>
     </main>
   );
