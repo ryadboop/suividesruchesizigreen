@@ -64,6 +64,13 @@ export const placementLabel: Record<PlacementType, string> = {
 
 export const initialHives: Hive[] = [];
 
+/** Prix public d'une ruche : 1 440 € HT / an. */
+export const PRICE_PER_HIVE = 1440;
+
+export function annualRevenue(hiveCount: number) {
+  return hiveCount * PRICE_PER_HIVE;
+}
+
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
