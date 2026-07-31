@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Award, Hexagon, Leaf, TrendingUp } from "lucide-react";
+import { Archive, Award, Hexagon, Leaf, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
@@ -11,10 +11,11 @@ import { HiveTable } from "@/components/dashboard/hive-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
 import { celebrate } from "@/lib/celebrate";
+import { useHiveStore } from "@/lib/hive-store";
 import {
+  annualRevenue,
   engagementProgress,
   formatEuro,
-  initialHives,
   statusLabel,
   type Hive,
   type HiveStatus,
