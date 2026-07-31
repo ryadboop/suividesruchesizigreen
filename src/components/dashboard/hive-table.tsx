@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Hexagon } from "lucide-react";
 
+import { DeleteHiveDialog } from "./delete-hive-dialog";
 import { EngagementRing } from "./engagement-ring";
 import {
   engagementProgress,
@@ -18,10 +19,16 @@ const statusStyles: Record<Hive["status"], string> = {
   renewal: "bg-honey-soft text-honey-foreground",
 };
 
-export function HiveTable({ hives }: { hives: Hive[] }) {
+export function HiveTable({
+  hives,
+  onDelete,
+}: {
+  hives: Hive[];
+  onDelete: (id: string) => void;
+}) {
   return (
     <div className="glass-card overflow-hidden rounded-3xl">
-      <div className="hidden grid-cols-[1.6fr_1.2fr_1fr_1.4fr_0.8fr] gap-4 border-b border-border/60 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground md:grid">
+      <div className="hidden grid-cols-[1.6fr_1.2fr_1fr_1.4fr_0.9fr] gap-4 border-b border-border/60 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground md:grid">
         <span>Rucher</span>
         <span>Client</span>
         <span>CA annuel</span>
@@ -41,7 +48,7 @@ export function HiveTable({ hives }: { hives: Hive[] }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ duration: 0.32, delay: Math.min(i * 0.03, 0.2), ease: [0.22, 1, 0.36, 1] }}
-                className="group grid grid-cols-1 gap-4 px-6 py-4 transition-colors duration-300 hover:bg-accent/40 md:grid-cols-[1.6fr_1.2fr_1fr_1.4fr_0.8fr] md:items-center"
+                className="group grid grid-cols-1 gap-4 px-6 py-4 transition-colors duration-300 hover:bg-accent/40 md:grid-cols-[1.6fr_1.2fr_1fr_1.4fr_0.9fr] md:items-center"
               >
                 <div className="flex items-center gap-3">
                   <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
