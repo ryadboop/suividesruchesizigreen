@@ -194,9 +194,9 @@ export function AddHiveDialog({ onCreate }: Props) {
                         <button
                           key={p.id}
                           type="button"
-                          onClick={() => set("placement", p.id)}
+                          onClick={() => selectPlacement(p.id)}
                           className={cn(
-                            "rounded-2xl border px-3 py-2.5 text-left text-sm font-medium transition-all duration-300",
+                            "rounded-2xl border px-3 py-2.5 text-center text-sm font-medium transition-all duration-300",
                             form.placement === p.id
                               ? "border-primary bg-primary/10 text-primary shadow-sm"
                               : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
@@ -206,23 +206,24 @@ export function AddHiveDialog({ onCreate }: Props) {
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs text-muted-foreground">{placement.description}</p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="detail">{placement.detailLabel}</Label>
-                    <Input
-                      id="detail"
-                      placeholder={placement.detailPlaceholder}
-                      value={form.placementDetail}
-                      onChange={(e) => set("placementDetail", e.target.value)}
-                      className="h-11 rounded-xl bg-background"
-                    />
-                  </div>
+                  {placement.needsAddress && (
+                    <div className="space-y-2">
+                      <Label htmlFor="detail">Adresse exacte</Label>
+                      <Input
+                        id="detail"
+                        placeholder={placement.addressPlaceholder}
+                        value={form.placementDetail}
+                        onChange={(e) => set("placementDetail", e.target.value)}
+                        className="h-11 rounded-xl bg-background"
+                      />
+                    </div>
+                  )}
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="site">Commune / site</Label>
+                      <Label htmlFor="site">Commune / ville</Label>
                       <Input
                         id="site"
                         placeholder="Fareins (01)"
@@ -247,6 +248,7 @@ export function AddHiveDialog({ onCreate }: Props) {
                       </Select>
                     </div>
                   </div>
+
                 </>
               )}
 
