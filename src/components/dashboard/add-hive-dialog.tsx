@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import {
+  FAREINS_REGION,
+  FAREINS_SITE,
   PLACEMENTS,
   PRICE_PER_HIVE,
   REGIONS,
