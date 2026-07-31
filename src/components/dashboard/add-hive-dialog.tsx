@@ -14,7 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { PLACEMENTS, REGIONS, type Hive, type PlacementType } from "@/lib/hives";
+import {
+  PLACEMENTS,
+  PRICE_PER_HIVE,
+  REGIONS,
+  annualRevenue,
+  formatEuro,
+  type Hive,
+  type PlacementType,
+} from "@/lib/hives";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -23,7 +31,8 @@ const steps = [
   { title: "L'engagement", subtitle: "Contrat 3 ans", icon: Wallet },
 ];
 
-type Props = { onCreate: (hive: Omit<Hive, "id">) => void };
+type NewHive = Omit<Hive, "id" | "revenue" | "status">;
+type Props = { onCreate: (hive: NewHive) => void };
 
 const emptyForm = {
   name: "",
@@ -34,7 +43,6 @@ const emptyForm = {
   placementDetail: "",
   startDate: new Date().toISOString().slice(0, 10),
   hiveCount: 4,
-  revenue: 3200,
 };
 
 export function AddHiveDialog({ onCreate }: Props) {
