@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Award, Hexagon, Leaf, TrendingUp } from "lucide-react";
+import { Archive, Award, Hexagon, Leaf, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
@@ -11,10 +11,11 @@ import { HiveTable } from "@/components/dashboard/hive-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
 import { celebrate } from "@/lib/celebrate";
+import { useHiveStore } from "@/lib/hive-store";
 import {
+  annualRevenue,
   engagementProgress,
   formatEuro,
-  initialHives,
   statusLabel,
   type Hive,
   type HiveStatus,
@@ -49,8 +50,9 @@ const filters: Array<{ id: HiveStatus | "all"; label: string }> = [
 ];
 
 function Dashboard() {
-  const [hives, setHives] = useState<Hive[]>(initialHives);
+  const { hives, archives, addHive, removeHive } = useHiveStore();
   const [filter, setFilter] = useState<HiveStatus | "all">("all");
+  const year = new Date().getFullYear();
 
   const visible = useMemo(
     () => (filter === "all" ? hives : hives.filter((h) => h.status === filter)),
@@ -62,14 +64,19 @@ function Dashboard() {
   const avgProgress =
     hives.reduce((sum, h) => sum + engagementProgress(h.startDate), 0) / (hives.length || 1);
 
-  const addHive = (hive: Omit<Hive, "id">) => {
-    setHives((prev) => [
-      { ...hive, id: `IZG-${String(prev.length + 1).padStart(3, "0")}` },
-      ...prev,
-    ]);
+  const create = (hive: Omit<Hive, "id" | "revenue" | "status">) => {
+    addHive(hive);
     celebrate();
     toast.success(`${hive.name} rejoint le réseau IziGreen 🐝`, {
-      description: `${hive.hiveCount} ruche(s) · ${formatEuro(hive.revenue)} de CA annuel`,
+      description: `${hive.hiveCount} ruche(s) · ${formatEuro(annualRevenue(hive.hiveCount))} de CA annuel HT`,
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    const hive = hives.find((h) => h.id === id);
+    removeHive(id);
+    toast.success(`${hive?.name ?? "Rucher"} supprimé`, {
+      description: "Les indicateurs de l'année en cours ont été mis à jour.",
     });
   };
 
@@ -83,17 +90,29 @@ function Dashboard() {
       >
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            <Leaf className="size-3.5" /> IziGreen · Saison 2026
+            <Leaf className="size-3.5" /> IziGreen · Saison {year}
           </span>
           <h1 className="mt-3 font-display text-4xl font-semibold text-foreground md:text-5xl">
             Vos ruchers, en un coup d'œil
           </h1>
           <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-            Suivez le chiffre d'affaires, la vitalité des colonies et la progression des
-            engagements de 3 ans.
+            Chiffres clés du 1<sup>er</sup> janvier au 31 décembre {year} · clôture et archivage
+            automatiques chaque 1<sup>er</sup> janvier.
           </p>
         </div>
-        <AddHiveDialog onCreate={addHive} />
+        <div className="flex items-center gap-2">
+          <Button asChild variant="glass" size="lg" className="rounded-2xl">
+            <Link to="/historique">
+              <Archive className="size-4" /> Historique
+              {archives.length > 0 && (
+                <span className="ml-1 rounded-full bg-primary/10 px-2 text-xs font-semibold text-primary">
+                  {archives.length}
+                </span>
+              )}
+            </Link>
+          </Button>
+          <AddHiveDialog onCreate={create} />
+        </div>
       </motion.header>
 
       <section className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -182,7 +201,7 @@ function Dashboard() {
       </section>
 
       <section className="mt-4">
-        <HiveTable hives={visible} />
+        <HiveTable hives={visible} onDelete={handleDelete} />
       </section>
     </main>
   );

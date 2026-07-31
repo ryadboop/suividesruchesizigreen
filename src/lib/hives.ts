@@ -64,6 +64,13 @@ export const placementLabel: Record<PlacementType, string> = {
 
 export const initialHives: Hive[] = [];
 
+/** Prix public d'une ruche : 1 440 € HT / an. */
+export const PRICE_PER_HIVE = 1440;
+
+export function annualRevenue(hiveCount: number) {
+  return hiveCount * PRICE_PER_HIVE;
+}
+
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -82,6 +89,22 @@ export function engagementProgress(startDate: string, now = today()): number {
 export function monthsRemaining(startDate: string, now = today()): number {
   const end = new Date(startDate).getTime() + 3 * YEAR_MS;
   return Math.max(0, Math.round((end - now.getTime()) / (YEAR_MS / 12)));
+}
+
+/** Date de fin de l'engagement de 3 ans. */
+export function engagementEnd(startDate: string): Date {
+  return new Date(new Date(startDate).getTime() + 3 * YEAR_MS);
+}
+
+/** L'engagement de 3 ans est-il arrivé à son terme ? */
+export function engagementCompleted(startDate: string, now = today()): boolean {
+  return engagementEnd(startDate).getTime() <= now.getTime();
+}
+
+/** Statut calculé : à installer, en cours ou renouvellement (fin des 3 ans). */
+export function computeStatus(startDate: string, now = today()): HiveStatus {
+  if (new Date(startDate).getTime() > now.getTime()) return "pending";
+  return engagementCompleted(startDate, now) ? "renewal" : "active";
 }
 
 export const statusLabel: Record<HiveStatus, string> = {

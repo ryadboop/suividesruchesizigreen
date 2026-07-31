@@ -14,7 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { PLACEMENTS, REGIONS, type Hive, type PlacementType } from "@/lib/hives";
+import {
+  PLACEMENTS,
+  PRICE_PER_HIVE,
+  REGIONS,
+  annualRevenue,
+  formatEuro,
+  type Hive,
+  type PlacementType,
+} from "@/lib/hives";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -23,7 +31,8 @@ const steps = [
   { title: "L'engagement", subtitle: "Contrat 3 ans", icon: Wallet },
 ];
 
-type Props = { onCreate: (hive: Omit<Hive, "id">) => void };
+type NewHive = Omit<Hive, "id" | "revenue" | "status">;
+type Props = { onCreate: (hive: NewHive) => void };
 
 const emptyForm = {
   name: "",
@@ -34,7 +43,6 @@ const emptyForm = {
   placementDetail: "",
   startDate: new Date().toISOString().slice(0, 10),
   hiveCount: 4,
-  revenue: 3200,
 };
 
 export function AddHiveDialog({ onCreate }: Props) {
@@ -69,8 +77,6 @@ export function AddHiveDialog({ onCreate }: Props) {
       placementDetail: form.placementDetail.trim(),
       startDate: form.startDate,
       hiveCount: form.hiveCount,
-      revenue: form.revenue,
-      status: new Date(form.startDate) > new Date() ? "pending" : "active",
     });
     setOpen(false);
     setTimeout(reset, 300);
@@ -256,15 +262,17 @@ export function AddHiveDialog({ onCreate }: Props) {
                       className="h-11 rounded-xl bg-background"
                     />
                   </div>
-                  <div className="space-y-3">
-                    <Label>Chiffre d'affaires annuel · {form.revenue.toLocaleString("fr-FR")} €</Label>
-                    <Slider
-                      value={[form.revenue]}
-                      min={500}
-                      max={15000}
-                      step={100}
-                      onValueChange={([v]) => set("revenue", v)}
-                    />
+                  <div className="rounded-2xl border border-border/60 bg-background p-4">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Chiffre d'affaires annuel (calculé)
+                    </p>
+                    <p className="mt-1 font-display text-3xl font-semibold tabular-nums text-foreground">
+                      {formatEuro(annualRevenue(form.hiveCount))} HT
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {form.hiveCount} ruche{form.hiveCount > 1 ? "s" : ""} ×{" "}
+                      {formatEuro(PRICE_PER_HIVE)} HT / an
+                    </p>
                   </div>
                   <div className="rounded-2xl bg-honey-soft/60 p-3 text-xs text-honey-foreground">
                     Engagement de 3 ans · fin prévue le{" "}
