@@ -64,8 +64,11 @@ export function HiveTable({
 
                 <div className="text-sm">
                   <p className="text-foreground">{hive.client}</p>
-                  <p className="text-xs text-muted-foreground">{hive.region}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {hive.beekeeper ? `Apiculteur · ${hive.beekeeper}` : hive.region}
+                  </p>
                 </div>
+
 
                 <p className="font-display text-lg font-semibold tabular-nums text-foreground">
                   {formatEuro(hive.revenue)}

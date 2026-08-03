@@ -118,39 +118,31 @@ function Dashboard() {
         </div>
       </motion.header>
 
-      <section className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          icon={<TrendingUp className="size-5" />}
-          label="Chiffre d'affaires"
-          accent="honey"
-          trend="+12,4%"
-          delay={0}
-          value={<CountUp value={revenue} format={(n) => formatEuro(n)} />}
-          hint="Cumul annuel contractualisé"
-        />
+      <section className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard
           icon={<Hexagon className="size-5" />}
           label={`Ruches installées ${year}`}
-          delay={0.06}
+          delay={0}
           value={<CountUp value={hiveCount} />}
           hint={`${hives.length} rucher${hives.length > 1 ? "s" : ""} suivi${hives.length > 1 ? "s" : ""}`}
         />
         <KpiCard
           icon={<Users className="size-5" />}
           label="Clients uniques"
-          delay={0.12}
+          delay={0.06}
           value={<CountUp value={clientCount} />}
           hint="Parrains distincts cette année"
         />
         <KpiCard
-          icon={<Award className="size-5" />}
-          label="Engagements honorés"
+          icon={<TrendingUp className="size-5" />}
+          label="Chiffre d'affaires"
           accent="honey"
-          delay={0.18}
-          value={<CountUp value={avgProgress * 100} format={(n) => `${Math.round(n)} %`} />}
-          hint="Progression moyenne des 3 ans"
+          delay={0.12}
+          value={<CountUp value={revenue} format={(n) => formatEuro(n)} />}
+          hint="Cumul annuel contractualisé HT"
         />
       </section>
+
 
       <section className="mt-6">
         <motion.div
