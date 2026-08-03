@@ -14,6 +14,8 @@ export type Hive = {
   placement: PlacementType;
   /** Détail propre au type d'implantation (surface, type d'espace, apiculteur…). */
   placementDetail: string;
+  /** Apiculteur partenaire en charge du rucher. */
+  beekeeper: string;
   status: HiveStatus;
 };
 
@@ -28,6 +30,7 @@ export const REGIONS = [
 
 export const FAREINS_SITE = "Fareins (01)";
 export const FAREINS_REGION = "Auvergne-Rhône-Alpes";
+export const FAREINS_BEEKEEPER = "Dominique Parriaud";
 
 export const PLACEMENTS: Array<{
   id: PlacementType;
