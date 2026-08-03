@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Archive, Award, Hexagon, Leaf, TrendingUp } from "lucide-react";
+import { Archive, Award, Hexagon, Leaf, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
@@ -61,6 +61,9 @@ function Dashboard() {
 
   const revenue = hives.reduce((sum, h) => sum + h.revenue, 0);
   const hiveCount = hives.reduce((sum, h) => sum + h.hiveCount, 0);
+  const clientCount = new Set(
+    hives.map((h) => h.client.trim().toLowerCase()).filter(Boolean),
+  ).size;
   const avgProgress =
     hives.reduce((sum, h) => sum + engagementProgress(h.startDate), 0) / (hives.length || 1);
 
@@ -127,17 +130,17 @@ function Dashboard() {
         />
         <KpiCard
           icon={<Hexagon className="size-5" />}
-          label="Ruchers actifs"
+          label={`Ruches installées ${year}`}
           delay={0.06}
-          value={<CountUp value={hives.length} />}
-          hint={`${hiveCount} ruche${hiveCount > 1 ? "s" : ""} installée${hiveCount > 1 ? "s" : ""}`}
+          value={<CountUp value={hiveCount} />}
+          hint={`${hives.length} rucher${hives.length > 1 ? "s" : ""} suivi${hives.length > 1 ? "s" : ""}`}
         />
         <KpiCard
-          icon={<Leaf className="size-5" />}
-          label="Abeilles parrainées"
+          icon={<Users className="size-5" />}
+          label="Clients uniques"
           delay={0.12}
-          value={<CountUp value={hiveCount * 40000} format={(n) => Math.round(n).toLocaleString("fr-FR")} />}
-          hint="Impact pollinisation local"
+          value={<CountUp value={clientCount} />}
+          hint="Parrains distincts cette année"
         />
         <KpiCard
           icon={<Award className="size-5" />}
@@ -149,7 +152,7 @@ function Dashboard() {
         />
       </section>
 
-      <section className="mt-6 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+      <section className="mt-6">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,24 +184,8 @@ function Dashboard() {
             {visible.length} rucher{visible.length > 1 ? "s" : ""}
           </span>
         </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="glass-card flex items-center justify-between gap-4 rounded-3xl p-4"
-        >
-          <EngagementRing
-            progress={avgProgress}
-            size={72}
-            label="Niveau du réseau"
-            sublabel="Badge Miel d'Or à 80 %"
-          />
-          <Button variant="glass" size="sm" className="rounded-xl">
-            <Award className="size-4" /> Badges
-          </Button>
-        </motion.div>
       </section>
+
 
       <section className="mt-4">
         <HiveTable hives={visible} onDelete={handleDelete} />
