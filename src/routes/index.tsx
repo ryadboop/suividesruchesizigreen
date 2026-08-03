@@ -14,7 +14,7 @@ import { celebrate } from "@/lib/celebrate";
 import { useHiveStore } from "@/lib/hive-store";
 import {
   annualRevenue,
-  engagementProgress,
+  
   formatEuro,
   statusLabel,
   type Hive,
