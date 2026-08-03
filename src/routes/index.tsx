@@ -14,13 +14,13 @@ import { celebrate } from "@/lib/celebrate";
 import { useHiveStore } from "@/lib/hive-store";
 import {
   annualRevenue,
-  
   formatEuro,
   statusLabel,
   type Hive,
   type HiveStatus,
 } from "@/lib/hives";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/izigreen-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -83,6 +83,22 @@ function Dashboard() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8 md:py-14">
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-8 flex items-center gap-3"
+      >
+        <img
+          src={logoAsset.url}
+          alt="IziGreen"
+          className="h-8 w-auto md:h-10"
+        />
+        <h2 className="font-display text-lg font-semibold text-foreground md:text-xl">
+          Suivi des ruches
+        </h2>
+      </motion.div>
+
       <motion.header
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
