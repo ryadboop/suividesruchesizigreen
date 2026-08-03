@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import {
+  FAREINS_BEEKEEPER,
   FAREINS_REGION,
   FAREINS_SITE,
   PLACEMENTS,
@@ -43,6 +44,7 @@ const emptyForm = {
   region: REGIONS[0],
   placement: "site" as PlacementType,
   placementDetail: "",
+  beekeeper: "",
   startDate: new Date().toISOString().slice(0, 10),
   hiveCount: 4,
 };
@@ -65,6 +67,12 @@ export function AddHiveDialog({ onCreate }: Props) {
       placementDetail: id === "friche" ? "" : f.placementDetail,
       site: id === "friche" ? FAREINS_SITE : f.site === FAREINS_SITE ? "" : f.site,
       region: id === "friche" ? FAREINS_REGION : f.region,
+      beekeeper:
+        id === "friche"
+          ? FAREINS_BEEKEEPER
+          : f.beekeeper === FAREINS_BEEKEEPER
+            ? ""
+            : f.beekeeper,
     }));
 
   const canContinue =
