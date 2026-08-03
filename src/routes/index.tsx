@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
 import { CountUp } from "@/components/dashboard/count-up";
-import { EngagementRing } from "@/components/dashboard/engagement-ring";
+
 import { HiveTable } from "@/components/dashboard/hive-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
