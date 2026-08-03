@@ -94,6 +94,7 @@ export function AddHiveDialog({ onCreate }: Props) {
       region: form.region,
       placement: form.placement,
       placementDetail: form.placementDetail.trim(),
+      beekeeper: form.beekeeper.trim(),
       startDate: form.startDate,
       hiveCount: form.hiveCount,
     });
@@ -268,7 +269,23 @@ export function AddHiveDialog({ onCreate }: Props) {
                     </div>
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="beekeeper">Apiculteur partenaire</Label>
+                    <Input
+                      id="beekeeper"
+                      placeholder="Dominique Parriaud"
+                      value={form.beekeeper}
+                      onChange={(e) => set("beekeeper", e.target.value)}
+                      className="h-11 rounded-xl bg-background"
+                    />
+                    {form.placement === "friche" && (
+                      <p className="text-xs text-muted-foreground">
+                        Pré-rempli automatiquement pour Fareins.
+                      </p>
+                    )}
+                  </div>
                 </>
+
               )}
 
               {step === 2 && (
