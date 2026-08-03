@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Archive, Award, Hexagon, Leaf, TrendingUp, Users } from "lucide-react";
+import { Archive, Hexagon, Leaf, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
@@ -64,8 +64,6 @@ function Dashboard() {
   const clientCount = new Set(
     hives.map((h) => h.client.trim().toLowerCase()).filter(Boolean),
   ).size;
-  const avgProgress =
-    hives.reduce((sum, h) => sum + engagementProgress(h.startDate), 0) / (hives.length || 1);
 
   const create = (hive: Omit<Hive, "id" | "revenue" | "status">) => {
     addHive(hive);
