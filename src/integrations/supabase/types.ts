@@ -14,7 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      hives: {
+        Row: {
+          beekeeper: string
+          client: string
+          created_at: string
+          hive_count: number
+          id: string
+          name: string
+          placement: string
+          placement_detail: string
+          region: string
+          site: string
+          start_date: string
+        }
+        Insert: {
+          beekeeper?: string
+          client?: string
+          created_at?: string
+          hive_count?: number
+          id?: string
+          name: string
+          placement?: string
+          placement_detail?: string
+          region?: string
+          site?: string
+          start_date: string
+        }
+        Update: {
+          beekeeper?: string
+          client?: string
+          created_at?: string
+          hive_count?: number
+          id?: string
+          name?: string
+          placement?: string
+          placement_detail?: string
+          region?: string
+          site?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
+      year_archives: {
+        Row: {
+          apiary_count: number
+          closed_at: string
+          hive_count: number
+          hives: Json
+          revenue: number
+          year: number
+        }
+        Insert: {
+          apiary_count?: number
+          closed_at?: string
+          hive_count?: number
+          hives?: Json
+          revenue?: number
+          year: number
+        }
+        Update: {
+          apiary_count?: number
+          closed_at?: string
+          hive_count?: number
+          hives?: Json
+          revenue?: number
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
