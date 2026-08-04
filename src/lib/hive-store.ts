@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { annualRevenue, computeStatus, type Hive } from "./hives";
+import { supabase } from "@/integrations/supabase/client";
+import { annualRevenue, computeStatus, type Hive, type PlacementType } from "./hives";
 
 export type YearArchive = {
   year: number;
@@ -11,95 +12,143 @@ export type YearArchive = {
   apiaryCount: number;
 };
 
-type Persisted = {
-  hives: Hive[];
-  archives: YearArchive[];
-  /** Dernière année pour laquelle le dashboard a été ouvert. */
-  lastYear: number;
+type HiveRow = {
+  id: string;
+  name: string;
+  site: string;
+  region: string;
+  client: string;
+  start_date: string;
+  hive_count: number;
+  placement: string;
+  placement_detail: string;
+  beekeeper: string;
 };
 
-const KEY = "izigreen.hives.v1";
-
-const empty: Persisted = { hives: [], archives: [], lastYear: new Date().getFullYear() };
-
-function snapshot(year: number, hives: Hive[]): YearArchive {
+function toHive(row: HiveRow): Hive {
   return {
-    year,
-    closedAt: new Date(year + 1, 0, 1).toISOString(),
-    hives,
-    revenue: hives.reduce((s, h) => s + annualRevenue(h.hiveCount), 0),
-    hiveCount: hives.reduce((s, h) => s + h.hiveCount, 0),
-    apiaryCount: hives.length,
+    id: row.id,
+    name: row.name,
+    site: row.site,
+    region: row.region,
+    client: row.client,
+    startDate: row.start_date,
+    hiveCount: row.hive_count,
+    placement: row.placement as PlacementType,
+    placementDetail: row.placement_detail,
+    beekeeper: row.beekeeper,
+    revenue: annualRevenue(row.hive_count),
+    status: computeStatus(row.start_date),
   };
 }
 
-/** Clôture automatique au 1er janvier : chaque année passée est archivée. */
-function rollover(state: Persisted, currentYear: number): Persisted {
-  if (currentYear <= state.lastYear) return state;
-  const archives = [...state.archives];
-  for (let y = state.lastYear; y < currentYear; y++) {
-    if (!archives.some((a) => a.year === y)) archives.push(snapshot(y, state.hives));
-  }
-  return { ...state, archives: archives.sort((a, b) => b.year - a.year), lastYear: currentYear };
-}
+/** Clôture automatique : archive l'année écoulée si ce n'est pas déjà fait. */
+async function ensureRollover(hives: Hive[]) {
+  const currentYear = new Date().getFullYear();
+  const previous = currentYear - 1;
+  const cutoff = new Date(Date.UTC(currentYear, 0, 1)).getTime();
+  const closing = hives.filter((h) => new Date(h.startDate).getTime() < cutoff);
+  if (closing.length === 0) return;
 
-function read(): Persisted {
-  if (typeof window === "undefined") return empty;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return empty;
-    const parsed = { ...empty, ...(JSON.parse(raw) as Partial<Persisted>) };
-    return rollover(parsed, new Date().getFullYear());
-  } catch {
-    return empty;
-  }
+  const { data } = await supabase
+    .from("year_archives")
+    .select("year")
+    .eq("year", previous)
+    .maybeSingle();
+  if (data) return;
+
+  await supabase.from("year_archives").insert({
+    year: previous,
+    closed_at: new Date(Date.UTC(currentYear, 0, 1)).toISOString(),
+    hives: closing as unknown as never,
+    revenue: closing.reduce((s, h) => s + annualRevenue(h.hiveCount), 0),
+    hive_count: closing.reduce((s, h) => s + h.hiveCount, 0),
+    apiary_count: closing.length,
+  });
 }
 
 export function useHiveStore() {
-  const [state, setState] = useState<Persisted>(empty);
+  const [hives, setHives] = useState<Hive[]>([]);
+  const [archives, setArchives] = useState<YearArchive[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    setState(read());
+  const load = useCallback(async () => {
+    const [hivesRes, archivesRes] = await Promise.all([
+      supabase.from("hives").select("*").order("created_at", { ascending: false }),
+      supabase.from("year_archives").select("*").order("year", { ascending: false }),
+    ]);
+
+    const list = (hivesRes.data ?? []).map((r) => toHive(r as HiveRow));
+    setHives(list);
+    setArchives(
+      (archivesRes.data ?? []).map((a) => ({
+        year: a.year,
+        closedAt: a.closed_at,
+        hives: (a.hives ?? []) as unknown as Hive[],
+        revenue: a.revenue,
+        hiveCount: a.hive_count,
+        apiaryCount: a.apiary_count,
+      })),
+    );
     setHydrated(true);
+    return list;
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(state));
-    } catch {
-      /* quota / mode privé */
-    }
-  }, [state, hydrated]);
+    let cancelled = false;
 
-  const addHive = useCallback((hive: Omit<Hive, "id" | "revenue" | "status">) => {
-    setState((s) => ({
-      ...s,
-      hives: [
-        {
-          ...hive,
-          id: `IZG-${Date.now().toString(36).toUpperCase()}`,
-          revenue: annualRevenue(hive.hiveCount),
-          status: computeStatus(hive.startDate),
+    void load().then(async (list) => {
+      if (cancelled) return;
+      await ensureRollover(list);
+    });
+
+    const channel = supabase
+      .channel("izigreen-hives")
+      .on("postgres_changes", { event: "*", schema: "public", table: "hives" }, () => {
+        void load();
+      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "year_archives" },
+        () => {
+          void load();
         },
-        ...s.hives,
-      ],
-    }));
-  }, []);
+      )
+      .subscribe();
 
-  const removeHive = useCallback((id: string) => {
-    setState((s) => ({ ...s, hives: s.hives.filter((h) => h.id !== id) }));
-  }, []);
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [load]);
 
-  // Recalcule statut + CA à chaque rendu (prix et engagement pilotés par la règle métier).
-  const hives = state.hives.map((h) => ({
-    ...h,
-    revenue: annualRevenue(h.hiveCount),
-    status: computeStatus(h.startDate),
-  }));
+  const addHive = useCallback(
+    async (hive: Omit<Hive, "id" | "revenue" | "status">) => {
+      await supabase.from("hives").insert({
+        name: hive.name,
+        site: hive.site,
+        region: hive.region,
+        client: hive.client,
+        start_date: hive.startDate,
+        hive_count: hive.hiveCount,
+        placement: hive.placement,
+        placement_detail: hive.placementDetail,
+        beekeeper: hive.beekeeper ?? "",
+      });
+      await load();
+    },
+    [load],
+  );
 
-  return { hives, archives: state.archives, hydrated, addHive, removeHive };
+  const removeHive = useCallback(
+    async (id: string) => {
+      await supabase.from("hives").delete().eq("id", id);
+      await load();
+    },
+    [load],
+  );
+
+  return { hives, archives, hydrated, addHive, removeHive };
 }
 
 export function archiveToCsv(archive: YearArchive) {
