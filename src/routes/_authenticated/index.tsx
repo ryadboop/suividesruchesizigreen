@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Archive, Hexagon, Leaf, LogOut, TrendingUp, Users } from "lucide-react";
+import { Archive, Hexagon, Leaf, LogOut, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +13,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
 import { celebrate } from "@/lib/celebrate";
 import { useHiveStore } from "@/lib/hive-store";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import {
   annualRevenue,
   formatEuro,
@@ -54,6 +55,7 @@ function Dashboard() {
   const { hives, archives, addHive, removeHive } = useHiveStore();
   const [filter, setFilter] = useState<HiveStatus | "all">("all");
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
   const year = new Date().getFullYear();
 
   const signOut = async () => {
