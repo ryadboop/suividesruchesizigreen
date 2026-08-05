@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Archive, Hexagon, Leaf, LogOut, TrendingUp, Users } from "lucide-react";
+import { Archive, Hexagon, Leaf, LogOut, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +13,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
 import { celebrate } from "@/lib/celebrate";
 import { useHiveStore } from "@/lib/hive-store";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import {
   annualRevenue,
   formatEuro,
@@ -54,6 +55,7 @@ function Dashboard() {
   const { hives, archives, addHive, removeHive } = useHiveStore();
   const [filter, setFilter] = useState<HiveStatus | "all">("all");
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
   const year = new Date().getFullYear();
 
   const signOut = async () => {
@@ -105,14 +107,23 @@ function Dashboard() {
         <h2 className="font-display text-lg font-semibold text-foreground md:text-xl">
           Suivi des ruches
         </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={signOut}
-          className="ml-auto rounded-xl text-muted-foreground"
-        >
-          <LogOut className="size-4" /> Se déconnecter
-        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          {isAdmin && (
+            <Button asChild variant="ghost" size="sm" className="rounded-xl text-muted-foreground">
+              <Link to="/admin">
+                <ShieldCheck className="size-4" /> Admin
+              </Link>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={signOut}
+            className="rounded-xl text-muted-foreground"
+          >
+            <LogOut className="size-4" /> Se déconnecter
+          </Button>
+        </div>
       </motion.div>
 
 

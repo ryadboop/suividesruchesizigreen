@@ -34,7 +34,6 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,22 +52,8 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          toast.success("Vérifiez votre boîte mail", {
-            description: "Confirmez votre adresse pour activer votre accès.",
-          });
-        }
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Connexion impossible");
     } finally {
@@ -130,7 +115,7 @@ function AuthPage() {
             <Input
               id="password"
               type="password"
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              autoComplete="current-password"
               required
               minLength={8}
               value={password}
@@ -139,19 +124,13 @@ function AuthPage() {
             />
           </div>
           <Button type="submit" disabled={loading} className="w-full rounded-2xl" size="lg">
-            {mode === "signin" ? "Se connecter" : "Créer mon compte"}
+            Se connecter
           </Button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
-        >
-          {mode === "signin"
-            ? "Pas encore de compte ? Créer un compte"
-            : "J'ai déjà un compte — me connecter"}
-        </button>
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Les accès sont créés uniquement par l'administrateur IziGreen.
+        </p>
       </motion.div>
     </main>
   );
