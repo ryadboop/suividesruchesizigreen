@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Archive, Hexagon, Leaf, TrendingUp, Users } from "lucide-react";
+import { Archive, Hexagon, Leaf, LogOut, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
 import { CountUp } from "@/components/dashboard/count-up";
