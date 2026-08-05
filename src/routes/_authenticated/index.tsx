@@ -105,14 +105,23 @@ function Dashboard() {
         <h2 className="font-display text-lg font-semibold text-foreground md:text-xl">
           Suivi des ruches
         </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={signOut}
-          className="ml-auto rounded-xl text-muted-foreground"
-        >
-          <LogOut className="size-4" /> Se déconnecter
-        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          {isAdmin && (
+            <Button asChild variant="ghost" size="sm" className="rounded-xl text-muted-foreground">
+              <Link to="/admin">
+                <ShieldCheck className="size-4" /> Admin
+              </Link>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={signOut}
+            className="rounded-xl text-muted-foreground"
+          >
+            <LogOut className="size-4" /> Se déconnecter
+          </Button>
+        </div>
       </motion.div>
 
 
