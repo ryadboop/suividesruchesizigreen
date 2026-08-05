@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Archive, Hexagon, Leaf, TrendingUp, Users } from "lucide-react";
+import { Archive, Hexagon, Leaf, LogOut, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
 import { CountUp } from "@/components/dashboard/count-up";
@@ -22,7 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/izigreen-logo.png.asset.json";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Dashboard IziGreen · Pilotage des ruchers" },
@@ -52,7 +53,14 @@ const filters: Array<{ id: HiveStatus | "all"; label: string }> = [
 function Dashboard() {
   const { hives, archives, addHive, removeHive } = useHiveStore();
   const [filter, setFilter] = useState<HiveStatus | "all">("all");
+  const navigate = useNavigate();
   const year = new Date().getFullYear();
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    void navigate({ to: "/auth", replace: true });
+  };
+
 
   const visible = useMemo(
     () => (filter === "all" ? hives : hives.filter((h) => h.status === filter)),
@@ -97,7 +105,16 @@ function Dashboard() {
         <h2 className="font-display text-lg font-semibold text-foreground md:text-xl">
           Suivi des ruches
         </h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={signOut}
+          className="ml-auto rounded-xl text-muted-foreground"
+        >
+          <LogOut className="size-4" /> Se déconnecter
+        </Button>
       </motion.div>
+
 
       <motion.header
         initial={{ opacity: 0, y: -12 }}

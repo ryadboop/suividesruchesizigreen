@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { downloadArchive, useHiveStore } from "@/lib/hive-store";
 import { formatEuro, placementLabel } from "@/lib/hives";
 
-export const Route = createFileRoute("/historique")({
+export const Route = createFileRoute("/_authenticated/historique")({
   head: () => ({
     meta: [
       { title: "Historique annuel · Ruchers IziGreen" },
