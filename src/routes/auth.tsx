@@ -115,7 +115,7 @@ function AuthPage() {
             <Input
               id="password"
               type="password"
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              autoComplete="current-password"
               required
               minLength={8}
               value={password}
@@ -124,19 +124,13 @@ function AuthPage() {
             />
           </div>
           <Button type="submit" disabled={loading} className="w-full rounded-2xl" size="lg">
-            {mode === "signin" ? "Se connecter" : "Créer mon compte"}
+            Se connecter
           </Button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
-        >
-          {mode === "signin"
-            ? "Pas encore de compte ? Créer un compte"
-            : "J'ai déjà un compte — me connecter"}
-        </button>
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Les accès sont créés uniquement par l'administrateur IziGreen.
+        </p>
       </motion.div>
     </main>
   );
