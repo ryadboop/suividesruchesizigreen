@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/izigreen-logo.png.asset.json";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Dashboard IziGreen · Pilotage des ruchers" },

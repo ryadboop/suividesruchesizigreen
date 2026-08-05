@@ -9,79 +9,69 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as HistoriqueRouteImport } from './routes/historique'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedHistoriqueRouteImport } from './routes/_authenticated/historique'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/_authenticated/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HistoriqueRoute = HistoriqueRouteImport.update({
-  id: '/historique',
+const AuthenticatedHistoriqueRoute = AuthenticatedHistoriqueRouteImport.update({
+  id: '/_authenticated/historique',
   path: '/historique',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/historique': typeof HistoriqueRoute
+  '/historique': typeof AuthenticatedHistoriqueRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/historique': typeof HistoriqueRoute
+  '/historique': typeof AuthenticatedHistoriqueRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/historique': typeof HistoriqueRoute
+  '/_authenticated/historique': typeof AuthenticatedHistoriqueRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/historique'
+  fullPaths: '/historique' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/historique'
-  id: '__root__' | '/' | '/historique'
+  to: '/historique' | '/'
+  id: '__root__' | '/_authenticated/historique' | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  HistoriqueRoute: typeof HistoriqueRoute
+  AuthenticatedHistoriqueRoute: typeof AuthenticatedHistoriqueRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/historique': {
-      id: '/historique'
+    '/_authenticated/historique': {
+      id: '/_authenticated/historique'
       path: '/historique'
       fullPath: '/historique'
-      preLoaderRoute: typeof HistoriqueRouteImport
+      preLoaderRoute: typeof AuthenticatedHistoriqueRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  HistoriqueRoute: HistoriqueRoute,
+  AuthenticatedHistoriqueRoute: AuthenticatedHistoriqueRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
