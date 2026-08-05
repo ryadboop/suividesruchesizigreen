@@ -53,7 +53,14 @@ const filters: Array<{ id: HiveStatus | "all"; label: string }> = [
 function Dashboard() {
   const { hives, archives, addHive, removeHive } = useHiveStore();
   const [filter, setFilter] = useState<HiveStatus | "all">("all");
+  const navigate = useNavigate();
   const year = new Date().getFullYear();
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    void navigate({ to: "/auth", replace: true });
+  };
+
 
   const visible = useMemo(
     () => (filter === "all" ? hives : hives.filter((h) => h.status === filter)),
