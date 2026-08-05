@@ -2,8 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const OWNER_EMAIL = "ryad.bouchami@izigroup.fr";
-
 export type AppUser = {
   id: string;
   email: string;
@@ -19,25 +17,6 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
   });
   if (error || !data) throw new Error("Accès réservé à l'administrateur");
 }
-
-/** Crée le compte administrateur initial. Sans effet si un admin existe déjà. */
-export const bootstrapOwner = createServerFn({ method: "POST" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-  const { count } = await supabaseAdmin
-    .from("user_roles")
-    .select("id", { count: "exact", head: true })
-    .eq("role", "admin");
-  if ((count ?? 0) > 0) return { created: false as const };
-
-  const { error } = await supabaseAdmin.auth.admin.createUser({
-    email: OWNER_EMAIL,
-    password: "Ryad69izi",
-    email_confirm: true,
-  });
-  if (error && !/already/i.test(error.message)) throw new Error(error.message);
-  return { created: true as const };
-});
 
 export const listAppUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
