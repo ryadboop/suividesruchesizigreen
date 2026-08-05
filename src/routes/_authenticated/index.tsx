@@ -105,7 +105,16 @@ function Dashboard() {
         <h2 className="font-display text-lg font-semibold text-foreground md:text-xl">
           Suivi des ruches
         </h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={signOut}
+          className="ml-auto rounded-xl text-muted-foreground"
+        >
+          <LogOut className="size-4" /> Se déconnecter
+        </Button>
       </motion.div>
+
 
       <motion.header
         initial={{ opacity: 0, y: -12 }}
