@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { annualRevenue, computeStatus, type Hive, type PlacementType } from "./hives";
+import { computeStatus, effectiveRevenue, type Hive, type PlacementType } from "./hives";
 
 export type YearArchive = {
   year: number;
@@ -23,6 +23,9 @@ type HiveRow = {
   placement: string;
   placement_detail: string;
   beekeeper: string;
+  latitude: number | null;
+  longitude: number | null;
+  price: number | null;
 };
 
 function toHive(row: HiveRow): Hive {
@@ -37,10 +40,14 @@ function toHive(row: HiveRow): Hive {
     placement: row.placement as PlacementType,
     placementDetail: row.placement_detail,
     beekeeper: row.beekeeper,
-    revenue: annualRevenue(row.hive_count),
+    latitude: row.latitude,
+    longitude: row.longitude,
+    price: row.price,
+    revenue: effectiveRevenue(row.hive_count, row.price),
     status: computeStatus(row.start_date),
   };
 }
+
 
 /** Clôture automatique : archive l'année écoulée si ce n'est pas déjà fait. */
 async function ensureRollover(hives: Hive[]) {
