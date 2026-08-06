@@ -74,7 +74,7 @@ async function ensureRollover(hives: Hive[]) {
     year: previous,
     closed_at: new Date(Date.UTC(currentYear, 0, 1)).toISOString(),
     hives: closing as unknown as never,
-    revenue: closing.reduce((s, h) => s + annualRevenue(h.hiveCount), 0),
+    revenue: closing.reduce((s, h) => s + effectiveRevenue(h.hiveCount, h.price), 0),
     hive_count: closing.reduce((s, h) => s + h.hiveCount, 0),
     apiary_count: closing.length,
   });
@@ -219,7 +219,7 @@ export function archiveToCsv(archive: YearArchive) {
     h.placementDetail,
     h.beekeeper ?? "",
     String(h.hiveCount),
-    String(annualRevenue(h.hiveCount)),
+    String(effectiveRevenue(h.hiveCount, h.price)),
     h.startDate,
     h.status,
   ]);
