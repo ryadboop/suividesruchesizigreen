@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Hexagon, MapPin, Sparkles, Wallet } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Hexagon, LocateFixed, MapPin, Sparkles, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
