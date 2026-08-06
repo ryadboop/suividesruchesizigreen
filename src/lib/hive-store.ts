@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { computeStatus, effectiveRevenue, type Hive, type PlacementType } from "./hives";
+import {
+  annualRevenue,
+  computeStatus,
+  effectiveRevenue,
+  type Hive,
+  type PlacementType,
+} from "./hives";
 
 export type YearArchive = {
   year: number;
