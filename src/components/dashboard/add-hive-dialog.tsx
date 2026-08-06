@@ -451,7 +451,7 @@ export function AddHiveDialog({ onCreate }: Props) {
               Continuer <ArrowRight />
             </Button>
           ) : (
-            <Button variant="honey" onClick={submit}>
+            <Button variant="honey" onClick={submit} disabled={!priceValid || !coordsValid}>
               <Check /> Créer la ruche
             </Button>
           )}
