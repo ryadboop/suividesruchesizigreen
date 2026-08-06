@@ -76,6 +76,20 @@ export function annualRevenue(hiveCount: number) {
   return hiveCount * PRICE_PER_HIVE;
 }
 
+/** CA retenu : prix personnalisé s'il existe, sinon tarif de base. */
+export function effectiveRevenue(hiveCount: number, price?: number | null) {
+  return price === null || price === undefined || Number.isNaN(price)
+    ? annualRevenue(hiveCount)
+    : price;
+}
+
+/** Formate des coordonnées GPS. */
+export function formatCoords(lat?: number | null, lng?: number | null) {
+  if (lat == null || lng == null) return null;
+  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+}
+
+
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
