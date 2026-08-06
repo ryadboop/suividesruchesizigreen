@@ -16,8 +16,14 @@ export type Hive = {
   placementDetail: string;
   /** Apiculteur partenaire en charge du rucher. */
   beekeeper: string;
+  /** Coordonnées GPS du rucher (optionnelles). */
+  latitude: number | null;
+  longitude: number | null;
+  /** Prix total annuel facturé — null = tarif de base calculé. */
+  price: number | null;
   status: HiveStatus;
 };
+
 
 export const REGIONS = [
   "Auvergne-Rhône-Alpes",
