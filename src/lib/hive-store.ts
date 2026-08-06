@@ -205,6 +205,8 @@ export function archiveToCsv(archive: YearArchive) {
     "Implantation",
     "Détail",
     "Apiculteur",
+    "Latitude",
+    "Longitude",
     "Ruches",
     "CA annuel (€ HT)",
     "Début engagement",
@@ -218,11 +220,14 @@ export function archiveToCsv(archive: YearArchive) {
     h.placement,
     h.placementDetail,
     h.beekeeper ?? "",
+    h.latitude ?? "",
+    h.longitude ?? "",
     String(h.hiveCount),
     String(effectiveRevenue(h.hiveCount, h.price)),
     h.startDate,
     h.status,
   ]);
+
   return [head, ...rows]
     .map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(";"))
     .join("\n");
