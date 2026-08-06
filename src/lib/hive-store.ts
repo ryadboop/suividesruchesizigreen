@@ -141,8 +141,39 @@ export function useHiveStore() {
         placement: hive.placement,
         placement_detail: hive.placementDetail,
         beekeeper: hive.beekeeper ?? "",
+        latitude: hive.latitude,
+        longitude: hive.longitude,
+        price: hive.price,
       });
       await load();
+    },
+    [load],
+  );
+
+  /** Mise à jour d'un rucher (réservée aux administrateurs côté base). */
+  const updateHive = useCallback(
+    async (id: string, patch: Partial<Omit<Hive, "id" | "revenue" | "status">>) => {
+      const { error } = await supabase
+        .from("hives")
+        .update({
+          ...(patch.name !== undefined && { name: patch.name }),
+          ...(patch.site !== undefined && { site: patch.site }),
+          ...(patch.region !== undefined && { region: patch.region }),
+          ...(patch.client !== undefined && { client: patch.client }),
+          ...(patch.startDate !== undefined && { start_date: patch.startDate }),
+          ...(patch.hiveCount !== undefined && { hive_count: patch.hiveCount }),
+          ...(patch.placement !== undefined && { placement: patch.placement }),
+          ...(patch.placementDetail !== undefined && {
+            placement_detail: patch.placementDetail,
+          }),
+          ...(patch.beekeeper !== undefined && { beekeeper: patch.beekeeper }),
+          ...(patch.latitude !== undefined && { latitude: patch.latitude }),
+          ...(patch.longitude !== undefined && { longitude: patch.longitude }),
+          ...(patch.price !== undefined && { price: patch.price }),
+        })
+        .eq("id", id);
+      await load();
+      if (error) throw error;
     },
     [load],
   );
@@ -155,7 +186,8 @@ export function useHiveStore() {
     [load],
   );
 
-  return { hives, archives, hydrated, addHive, removeHive };
+  return { hives, archives, hydrated, addHive, updateHive, removeHive };
+
 }
 
 export function archiveToCsv(archive: YearArchive) {
