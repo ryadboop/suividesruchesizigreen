@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { annualRevenue, computeStatus, type Hive, type PlacementType } from "./hives";
+import {
+  annualRevenue,
+  computeStatus,
+  effectiveRevenue,
+  type Hive,
+  type PlacementType,
+} from "./hives";
 
 export type YearArchive = {
   year: number;
@@ -23,6 +29,9 @@ type HiveRow = {
   placement: string;
   placement_detail: string;
   beekeeper: string;
+  latitude: number | null;
+  longitude: number | null;
+  price: number | null;
 };
 
 function toHive(row: HiveRow): Hive {
@@ -37,10 +46,14 @@ function toHive(row: HiveRow): Hive {
     placement: row.placement as PlacementType,
     placementDetail: row.placement_detail,
     beekeeper: row.beekeeper,
-    revenue: annualRevenue(row.hive_count),
+    latitude: row.latitude,
+    longitude: row.longitude,
+    price: row.price,
+    revenue: effectiveRevenue(row.hive_count, row.price),
     status: computeStatus(row.start_date),
   };
 }
+
 
 /** Clôture automatique : archive l'année écoulée si ce n'est pas déjà fait. */
 async function ensureRollover(hives: Hive[]) {
@@ -61,7 +74,7 @@ async function ensureRollover(hives: Hive[]) {
     year: previous,
     closed_at: new Date(Date.UTC(currentYear, 0, 1)).toISOString(),
     hives: closing as unknown as never,
-    revenue: closing.reduce((s, h) => s + annualRevenue(h.hiveCount), 0),
+    revenue: closing.reduce((s, h) => s + effectiveRevenue(h.hiveCount, h.price), 0),
     hive_count: closing.reduce((s, h) => s + h.hiveCount, 0),
     apiary_count: closing.length,
   });
@@ -134,8 +147,39 @@ export function useHiveStore() {
         placement: hive.placement,
         placement_detail: hive.placementDetail,
         beekeeper: hive.beekeeper ?? "",
+        latitude: hive.latitude,
+        longitude: hive.longitude,
+        price: hive.price,
       });
       await load();
+    },
+    [load],
+  );
+
+  /** Mise à jour d'un rucher (réservée aux administrateurs côté base). */
+  const updateHive = useCallback(
+    async (id: string, patch: Partial<Omit<Hive, "id" | "revenue" | "status">>) => {
+      const { error } = await supabase
+        .from("hives")
+        .update({
+          ...(patch.name !== undefined && { name: patch.name }),
+          ...(patch.site !== undefined && { site: patch.site }),
+          ...(patch.region !== undefined && { region: patch.region }),
+          ...(patch.client !== undefined && { client: patch.client }),
+          ...(patch.startDate !== undefined && { start_date: patch.startDate }),
+          ...(patch.hiveCount !== undefined && { hive_count: patch.hiveCount }),
+          ...(patch.placement !== undefined && { placement: patch.placement }),
+          ...(patch.placementDetail !== undefined && {
+            placement_detail: patch.placementDetail,
+          }),
+          ...(patch.beekeeper !== undefined && { beekeeper: patch.beekeeper }),
+          ...(patch.latitude !== undefined && { latitude: patch.latitude }),
+          ...(patch.longitude !== undefined && { longitude: patch.longitude }),
+          ...(patch.price !== undefined && { price: patch.price }),
+        })
+        .eq("id", id);
+      await load();
+      if (error) throw error;
     },
     [load],
   );
@@ -148,7 +192,8 @@ export function useHiveStore() {
     [load],
   );
 
-  return { hives, archives, hydrated, addHive, removeHive };
+  return { hives, archives, hydrated, addHive, updateHive, removeHive };
+
 }
 
 export function archiveToCsv(archive: YearArchive) {
@@ -160,6 +205,8 @@ export function archiveToCsv(archive: YearArchive) {
     "Implantation",
     "Détail",
     "Apiculteur",
+    "Latitude",
+    "Longitude",
     "Ruches",
     "CA annuel (€ HT)",
     "Début engagement",
@@ -173,11 +220,14 @@ export function archiveToCsv(archive: YearArchive) {
     h.placement,
     h.placementDetail,
     h.beekeeper ?? "",
+    h.latitude ?? "",
+    h.longitude ?? "",
     String(h.hiveCount),
-    String(annualRevenue(h.hiveCount)),
+    String(effectiveRevenue(h.hiveCount, h.price)),
     h.startDate,
     h.status,
   ]);
+
   return [head, ...rows]
     .map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(";"))
     .join("\n");

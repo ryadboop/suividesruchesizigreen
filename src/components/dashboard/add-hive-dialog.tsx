@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Hexagon, MapPin, Sparkles, Wallet } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Hexagon, LocateFixed, MapPin, Sparkles, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -47,6 +47,9 @@ const emptyForm = {
   beekeeper: "",
   startDate: new Date().toISOString().slice(0, 10),
   hiveCount: 4,
+  latitude: "",
+  longitude: "",
+  price: "",
 };
 
 export function AddHiveDialog({ onCreate }: Props) {
@@ -54,6 +57,7 @@ export function AddHiveDialog({ onCreate }: Props) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [form, setForm] = useState(emptyForm);
+  const [locating, setLocating] = useState(false);
 
   const placement = PLACEMENTS.find((p) => p.id === form.placement)!;
 
@@ -75,10 +79,39 @@ export function AddHiveDialog({ onCreate }: Props) {
             : f.beekeeper,
     }));
 
+  const lat = form.latitude.trim() === "" ? null : Number(form.latitude.replace(",", "."));
+  const lng = form.longitude.trim() === "" ? null : Number(form.longitude.replace(",", "."));
+  const latValid = lat === null || (Number.isFinite(lat) && lat >= -90 && lat <= 90);
+  const lngValid = lng === null || (Number.isFinite(lng) && lng >= -180 && lng <= 180);
+  const coordsValid = latValid && lngValid && (lat === null) === (lng === null);
+
+  const customPrice =
+    form.price.trim() === "" ? null : Number(form.price.replace(",", ".").replace(/\s/g, ""));
+  const priceValid =
+    customPrice === null || (Number.isFinite(customPrice) && customPrice >= 0);
+  const finalPrice = customPrice ?? annualRevenue(form.hiveCount);
+
+  const locate = () => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({
+          ...f,
+          latitude: pos.coords.latitude.toFixed(6),
+          longitude: pos.coords.longitude.toFixed(6),
+        }));
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
   const canContinue =
     (step === 0 && form.name.trim().length > 1) ||
-    (step === 1 && form.client.trim().length > 1 && form.site.trim().length > 1) ||
-    step === 2;
+    (step === 1 && form.client.trim().length > 1 && form.site.trim().length > 1 && coordsValid) ||
+    (step === 2 && priceValid);
 
   const reset = () => {
     setStep(0);
@@ -87,6 +120,7 @@ export function AddHiveDialog({ onCreate }: Props) {
   };
 
   const submit = () => {
+    if (!coordsValid || !priceValid) return;
     onCreate({
       name: form.name.trim(),
       site: form.site.trim(),
@@ -97,10 +131,14 @@ export function AddHiveDialog({ onCreate }: Props) {
       beekeeper: form.beekeeper.trim(),
       startDate: form.startDate,
       hiveCount: form.hiveCount,
+      latitude: lat,
+      longitude: lng,
+      price: customPrice,
     });
     setOpen(false);
     setTimeout(reset, 300);
   };
+
 
   const progress = ((step + 1) / steps.length) * 100;
 
@@ -284,6 +322,49 @@ export function AddHiveDialog({ onCreate }: Props) {
                       </p>
                     )}
                   </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Coordonnées GPS (optionnel)</Label>
+                      <button
+                        type="button"
+                        onClick={locate}
+                        className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+                      >
+                        <LocateFixed className="size-3.5" />
+                        {locating ? "Localisation…" : "Position actuelle"}
+                      </button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input
+                        inputMode="decimal"
+                        placeholder="Latitude · 46.0512"
+                        value={form.latitude}
+                        onChange={(e) => set("latitude", e.target.value)}
+                        className="h-11 rounded-xl bg-background"
+                      />
+                      <Input
+                        inputMode="decimal"
+                        placeholder="Longitude · 4.7891"
+                        value={form.longitude}
+                        onChange={(e) => set("longitude", e.target.value)}
+                        className="h-11 rounded-xl bg-background"
+                      />
+                    </div>
+                    {!coordsValid && (
+                      <p className="text-xs text-destructive">
+                        Renseignez latitude et longitude valides (-90/90 et -180/180).
+                      </p>
+                    )}
+                    {coordsValid && lat !== null && lng !== null && (
+                      <iframe
+                        title="Aperçu de la position du rucher"
+                        className="h-40 w-full rounded-xl border border-border/60"
+                        loading="lazy"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01}%2C${lat - 0.008}%2C${lng + 0.01}%2C${lat + 0.008}&layer=mapnik&marker=${lat}%2C${lng}`}
+                      />
+                    )}
+                  </div>
                 </>
 
               )}
@@ -302,16 +383,39 @@ export function AddHiveDialog({ onCreate }: Props) {
                   </div>
                   <div className="rounded-2xl border border-border/60 bg-background p-4">
                     <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      Chiffre d'affaires annuel (calculé)
+                      Chiffre d'affaires annuel
                     </p>
                     <p className="mt-1 font-display text-3xl font-semibold tabular-nums text-foreground">
-                      {formatEuro(annualRevenue(form.hiveCount))} HT
+                      {formatEuro(finalPrice)} HT
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {form.hiveCount} ruche{form.hiveCount > 1 ? "s" : ""} ×{" "}
-                      {formatEuro(PRICE_PER_HIVE)} HT / an
+                      Tarif de base : {form.hiveCount} ruche{form.hiveCount > 1 ? "s" : ""} ×{" "}
+                      {formatEuro(PRICE_PER_HIVE)} HT / an ={" "}
+                      {formatEuro(annualRevenue(form.hiveCount))}
                     </p>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Prix total facturé (€ HT / an)</Label>
+                    <Input
+                      id="price"
+                      inputMode="decimal"
+                      placeholder={String(annualRevenue(form.hiveCount))}
+                      value={form.price}
+                      onChange={(e) => set("price", e.target.value)}
+                      className="h-11 rounded-xl bg-background"
+                    />
+                    {priceValid ? (
+                      <p className="text-xs text-muted-foreground">
+                        Laissez vide pour appliquer le tarif de base, ou saisissez un prix
+                        remisé.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-destructive">
+                        Saisissez un montant positif valide.
+                      </p>
+                    )}
+                  </div>
+
                   <div className="rounded-2xl bg-honey-soft/60 p-3 text-xs text-honey-foreground">
                     Engagement de 3 ans · fin prévue le{" "}
                     {new Date(
@@ -347,7 +451,7 @@ export function AddHiveDialog({ onCreate }: Props) {
               Continuer <ArrowRight />
             </Button>
           ) : (
-            <Button variant="honey" onClick={submit}>
+            <Button variant="honey" onClick={submit} disabled={!priceValid || !coordsValid}>
               <Check /> Créer la ruche
             </Button>
           )}

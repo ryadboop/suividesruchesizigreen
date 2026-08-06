@@ -21,9 +21,12 @@ export type Database = {
           created_at: string
           hive_count: number
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           placement: string
           placement_detail: string
+          price: number | null
           region: string
           site: string
           start_date: string
@@ -34,9 +37,12 @@ export type Database = {
           created_at?: string
           hive_count?: number
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           placement?: string
           placement_detail?: string
+          price?: number | null
           region?: string
           site?: string
           start_date: string
@@ -47,9 +53,12 @@ export type Database = {
           created_at?: string
           hive_count?: number
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           placement?: string
           placement_detail?: string
+          price?: number | null
           region?: string
           site?: string
           start_date?: string

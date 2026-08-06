@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AddHiveDialog } from "@/components/dashboard/add-hive-dialog";
 import { CountUp } from "@/components/dashboard/count-up";
 
+import { HiveDetailDialog } from "@/components/dashboard/hive-detail-dialog";
 import { HiveTable } from "@/components/dashboard/hive-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
@@ -52,8 +53,9 @@ const filters: Array<{ id: HiveStatus | "all"; label: string }> = [
 ];
 
 function Dashboard() {
-  const { hives, archives, addHive, removeHive } = useHiveStore();
+  const { hives, archives, addHive, updateHive, removeHive } = useHiveStore();
   const [filter, setFilter] = useState<HiveStatus | "all">("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin();
   const year = new Date().getFullYear();
@@ -79,7 +81,7 @@ function Dashboard() {
     addHive(hive);
     celebrate();
     toast.success(`${hive.name} rejoint le réseau IziGreen 🐝`, {
-      description: `${hive.hiveCount} ruche(s) · ${formatEuro(annualRevenue(hive.hiveCount))} de CA annuel HT`,
+      description: `${hive.hiveCount} ruche(s) · ${formatEuro(hive.price ?? annualRevenue(hive.hiveCount))} de CA annuel HT`,
     });
   };
 
@@ -222,8 +224,19 @@ function Dashboard() {
 
 
       <section className="mt-4">
-        <HiveTable hives={visible} onDelete={handleDelete} />
+        <HiveTable
+          hives={visible}
+          onDelete={handleDelete}
+          onSelect={(hive) => setSelectedId(hive.id)}
+        />
       </section>
+
+      <HiveDetailDialog
+        hive={hives.find((h) => h.id === selectedId) ?? null}
+        isAdmin={isAdmin}
+        onClose={() => setSelectedId(null)}
+        onSave={updateHive}
+      />
     </main>
   );
 }
