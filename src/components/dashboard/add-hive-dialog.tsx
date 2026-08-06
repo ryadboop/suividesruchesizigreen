@@ -47,6 +47,9 @@ const emptyForm = {
   beekeeper: "",
   startDate: new Date().toISOString().slice(0, 10),
   hiveCount: 4,
+  latitude: "",
+  longitude: "",
+  price: "",
 };
 
 export function AddHiveDialog({ onCreate }: Props) {
@@ -54,6 +57,7 @@ export function AddHiveDialog({ onCreate }: Props) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [form, setForm] = useState(emptyForm);
+  const [locating, setLocating] = useState(false);
 
   const placement = PLACEMENTS.find((p) => p.id === form.placement)!;
 
@@ -75,10 +79,39 @@ export function AddHiveDialog({ onCreate }: Props) {
             : f.beekeeper,
     }));
 
+  const lat = form.latitude.trim() === "" ? null : Number(form.latitude.replace(",", "."));
+  const lng = form.longitude.trim() === "" ? null : Number(form.longitude.replace(",", "."));
+  const latValid = lat === null || (Number.isFinite(lat) && lat >= -90 && lat <= 90);
+  const lngValid = lng === null || (Number.isFinite(lng) && lng >= -180 && lng <= 180);
+  const coordsValid = latValid && lngValid && (lat === null) === (lng === null);
+
+  const customPrice =
+    form.price.trim() === "" ? null : Number(form.price.replace(",", ".").replace(/\s/g, ""));
+  const priceValid =
+    customPrice === null || (Number.isFinite(customPrice) && customPrice >= 0);
+  const finalPrice = customPrice ?? annualRevenue(form.hiveCount);
+
+  const locate = () => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({
+          ...f,
+          latitude: pos.coords.latitude.toFixed(6),
+          longitude: pos.coords.longitude.toFixed(6),
+        }));
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
   const canContinue =
     (step === 0 && form.name.trim().length > 1) ||
-    (step === 1 && form.client.trim().length > 1 && form.site.trim().length > 1) ||
-    step === 2;
+    (step === 1 && form.client.trim().length > 1 && form.site.trim().length > 1 && coordsValid) ||
+    (step === 2 && priceValid);
 
   const reset = () => {
     setStep(0);
@@ -87,6 +120,7 @@ export function AddHiveDialog({ onCreate }: Props) {
   };
 
   const submit = () => {
+    if (!coordsValid || !priceValid) return;
     onCreate({
       name: form.name.trim(),
       site: form.site.trim(),
@@ -97,10 +131,14 @@ export function AddHiveDialog({ onCreate }: Props) {
       beekeeper: form.beekeeper.trim(),
       startDate: form.startDate,
       hiveCount: form.hiveCount,
+      latitude: lat,
+      longitude: lng,
+      price: customPrice,
     });
     setOpen(false);
     setTimeout(reset, 300);
   };
+
 
   const progress = ((step + 1) / steps.length) * 100;
 
