@@ -152,6 +152,12 @@ export function HiveDetailDialog({ hive, hives, isAdmin, onClose, onSave }: Prop
         placement: form.placement,
         placementDetail: form.placementDetail.trim(),
         beekeeper: form.beekeeper.trim(),
+        shareRole: form.placement === "partage" ? form.shareRole : "",
+        hostHiveId:
+          form.placement === "partage" && form.shareRole === "heberge"
+            ? form.hostHiveId
+            : null,
+
         startDate: form.startDate,
         hiveCount: form.hiveCount,
         latitude: lat,
