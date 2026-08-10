@@ -18,6 +18,7 @@ import {
   PLACEMENTS,
   PRICE_PER_HIVE,
   REGIONS,
+  SHARE_ROLES,
   annualRevenue,
   effectiveRevenue,
   engagementEnd,
@@ -26,19 +27,24 @@ import {
   formatEuro,
   monthsRemaining,
   placementLabel,
+  shareRoleLabel,
+  sharedHosts,
   statusLabel,
   type Hive,
   type PlacementType,
+  type ShareRole,
 } from "@/lib/hives";
 
 type Patch = Partial<Omit<Hive, "id" | "revenue" | "status">>;
 
 type Props = {
   hive: Hive | null;
+  hives: Hive[];
   isAdmin: boolean;
   onClose: () => void;
   onSave: (id: string, patch: Patch) => Promise<void>;
 };
+
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
