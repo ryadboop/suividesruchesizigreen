@@ -336,6 +336,55 @@ export function HiveDetailDialog({ hive, hives, isAdmin, onClose, onSave }: Prop
                     className="h-11 rounded-xl bg-background"
                   />
                 </div>
+                {form.placement === "partage" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Rôle sur le rucher partagé</Label>
+                      <Select
+                        value={form.shareRole || undefined}
+                        onValueChange={(v) =>
+                          setForm((f) => ({
+                            ...f,
+                            shareRole: v as ShareRole,
+                            hostHiveId: v === "hote" ? "" : f.hostHiveId,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="h-11 rounded-xl bg-background">
+                          <SelectValue placeholder="Hôte ou hébergé" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SHARE_ROLES.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {r.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {form.shareRole === "heberge" && (
+                      <div className="space-y-2">
+                        <Label>Rucher hôte</Label>
+                        <Select
+                          value={form.hostHiveId || undefined}
+                          onValueChange={(v) => set("hostHiveId", v)}
+                        >
+                          <SelectTrigger className="h-11 rounded-xl bg-background">
+                            <SelectValue placeholder="Choisir un rucher partagé" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hosts.map((h) => (
+                              <SelectItem key={h.id} value={h.id}>
+                                {h.name} · {h.site}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="d-bk">Apiculteur partenaire</Label>
                   <Input
