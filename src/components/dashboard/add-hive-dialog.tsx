@@ -126,7 +126,11 @@ export function AddHiveDialog({ onCreate, hives }: Props) {
 
   const canContinue =
     (step === 0 && form.name.trim().length > 1) ||
-    (step === 1 && form.client.trim().length > 1 && form.site.trim().length > 1 && coordsValid) ||
+    (step === 1 &&
+      form.client.trim().length > 1 &&
+      form.site.trim().length > 1 &&
+      coordsValid &&
+      shareValid) ||
     (step === 2 && priceValid);
 
   const reset = () => {
@@ -136,7 +140,7 @@ export function AddHiveDialog({ onCreate, hives }: Props) {
   };
 
   const submit = () => {
-    if (!coordsValid || !priceValid) return;
+    if (!coordsValid || !priceValid || !shareValid) return;
     onCreate({
       name: form.name.trim(),
       site: form.site.trim(),
@@ -145,6 +149,12 @@ export function AddHiveDialog({ onCreate, hives }: Props) {
       placement: form.placement,
       placementDetail: form.placementDetail.trim(),
       beekeeper: form.beekeeper.trim(),
+      shareRole: form.placement === "partage" ? form.shareRole : "",
+      hostHiveId:
+        form.placement === "partage" && form.shareRole === "heberge"
+          ? form.hostHiveId
+          : null,
+
       startDate: form.startDate,
       hiveCount: form.hiveCount,
       latitude: lat,
