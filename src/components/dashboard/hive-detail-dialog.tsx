@@ -57,7 +57,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
+export function HiveDetailDialog({ hive, hives, isAdmin, onClose, onSave }: Props) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -68,6 +68,8 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
     placement: "site" as PlacementType,
     placementDetail: "",
     beekeeper: "",
+    shareRole: "" as ShareRole,
+    hostHiveId: "",
     startDate: "",
     hiveCount: 1,
     latitude: "",
@@ -86,6 +88,8 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
       placement: hive.placement,
       placementDetail: hive.placementDetail,
       beekeeper: hive.beekeeper ?? "",
+      shareRole: hive.shareRole ?? "",
+      hostHiveId: hive.hostHiveId ?? "",
       startDate: hive.startDate,
       hiveCount: hive.hiveCount,
       latitude: hive.latitude == null ? "" : String(hive.latitude),
@@ -93,6 +97,7 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
       price: hive.price == null ? "" : String(hive.price),
     });
   }, [hive]);
+
 
   if (!hive) return null;
 
