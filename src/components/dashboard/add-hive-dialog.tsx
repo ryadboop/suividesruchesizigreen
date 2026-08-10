@@ -292,6 +292,73 @@ export function AddHiveDialog({ onCreate, hives }: Props) {
                     </div>
                   </div>
 
+                  {form.placement === "partage" && (
+                    <div className="space-y-3 rounded-2xl border border-border/60 bg-background p-3">
+                      <div className="space-y-2">
+                        <Label>Votre rôle sur le rucher partagé</Label>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {SHARE_ROLES.map((r) => (
+                            <button
+                              key={r.id}
+                              type="button"
+                              onClick={() =>
+                                setForm((f) => ({
+                                  ...f,
+                                  shareRole: r.id,
+                                  hostHiveId: r.id === "hote" ? "" : f.hostHiveId,
+                                }))
+                              }
+                              className={cn(
+                                "rounded-xl border px-3 py-2.5 text-center text-sm font-medium transition-all duration-300",
+                                form.shareRole === r.id
+                                  ? "border-primary bg-primary/10 text-primary shadow-sm"
+                                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                              )}
+                            >
+                              {r.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {form.shareRole === "heberge" && (
+                        <div className="space-y-2">
+                          <Label>Rucher hôte</Label>
+                          {hosts.length === 0 ? (
+                            <p className="text-xs text-destructive">
+                              Aucun rucher partagé hôte enregistré : créez d'abord le rucher
+                              hôte.
+                            </p>
+                          ) : (
+                            <Select
+                              value={form.hostHiveId}
+                              onValueChange={(v) => set("hostHiveId", v)}
+                            >
+                              <SelectTrigger className="h-11 rounded-xl bg-card">
+                                <SelectValue placeholder="Choisir un rucher partagé existant" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {hosts.map((h) => (
+                                  <SelectItem key={h.id} value={h.id}>
+                                    {h.name} · {h.site}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      )}
+
+                      {form.shareRole === "" && (
+                        <p className="text-xs text-muted-foreground">
+                          Indiquez si ce rucher accueille (hôte) ou est accueilli (hébergé).
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+
+
                   {placement.needsAddress && (
                     <div className="space-y-2">
                       <Label htmlFor="detail">Adresse exacte</Label>
