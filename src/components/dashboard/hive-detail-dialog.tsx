@@ -121,7 +121,13 @@ export function HiveDetailDialog({ hive, hives, isAdmin, onClose, onSave }: Prop
     form.price.trim() === "" ? null : Number(form.price.replace(",", ".").replace(/\s/g, ""));
   const priceValid = customPrice === null || (Number.isFinite(customPrice) && customPrice >= 0);
   const nameValid = form.name.trim().length > 1 && form.client.trim().length > 1;
-  const canSave = coordsValid && priceValid && nameValid && !saving;
+  const hosts = sharedHosts(hives, hive.id);
+  const shareValid =
+    form.placement !== "partage" ||
+    form.shareRole === "hote" ||
+    (form.shareRole === "heberge" && form.hostHiveId !== "");
+  const canSave = coordsValid && priceValid && nameValid && shareValid && !saving;
+
 
   const locate = () => {
     if (!navigator.geolocation) return;
