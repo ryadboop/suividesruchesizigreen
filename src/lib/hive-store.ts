@@ -29,6 +29,8 @@ type HiveRow = {
   placement: string;
   placement_detail: string;
   beekeeper: string;
+  share_role: string | null;
+  host_hive_id: string | null;
   latitude: number | null;
   longitude: number | null;
   price: number | null;
@@ -46,6 +48,8 @@ function toHive(row: HiveRow): Hive {
     placement: row.placement as PlacementType,
     placementDetail: row.placement_detail,
     beekeeper: row.beekeeper,
+    shareRole: (row.share_role ?? "") as ShareRole,
+    hostHiveId: row.host_hive_id,
     latitude: row.latitude,
     longitude: row.longitude,
     price: row.price,
@@ -53,6 +57,7 @@ function toHive(row: HiveRow): Hive {
     status: computeStatus(row.start_date),
   };
 }
+
 
 
 /** Clôture automatique : archive l'année écoulée si ce n'est pas déjà fait. */
