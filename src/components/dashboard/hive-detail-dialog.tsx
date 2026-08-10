@@ -18,6 +18,7 @@ import {
   PLACEMENTS,
   PRICE_PER_HIVE,
   REGIONS,
+  SHARE_ROLES,
   annualRevenue,
   effectiveRevenue,
   engagementEnd,
@@ -26,19 +27,24 @@ import {
   formatEuro,
   monthsRemaining,
   placementLabel,
+  shareRoleLabel,
+  sharedHosts,
   statusLabel,
   type Hive,
   type PlacementType,
+  type ShareRole,
 } from "@/lib/hives";
 
 type Patch = Partial<Omit<Hive, "id" | "revenue" | "status">>;
 
 type Props = {
   hive: Hive | null;
+  hives: Hive[];
   isAdmin: boolean;
   onClose: () => void;
   onSave: (id: string, patch: Patch) => Promise<void>;
 };
+
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -51,7 +57,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
+export function HiveDetailDialog({ hive, hives, isAdmin, onClose, onSave }: Props) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -62,6 +68,8 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
     placement: "site" as PlacementType,
     placementDetail: "",
     beekeeper: "",
+    shareRole: "" as ShareRole,
+    hostHiveId: "",
     startDate: "",
     hiveCount: 1,
     latitude: "",
@@ -80,6 +88,8 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
       placement: hive.placement,
       placementDetail: hive.placementDetail,
       beekeeper: hive.beekeeper ?? "",
+      shareRole: hive.shareRole ?? "",
+      hostHiveId: hive.hostHiveId ?? "",
       startDate: hive.startDate,
       hiveCount: hive.hiveCount,
       latitude: hive.latitude == null ? "" : String(hive.latitude),
@@ -87,6 +97,7 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
       price: hive.price == null ? "" : String(hive.price),
     });
   }, [hive]);
+
 
   if (!hive) return null;
 
@@ -110,7 +121,13 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
     form.price.trim() === "" ? null : Number(form.price.replace(",", ".").replace(/\s/g, ""));
   const priceValid = customPrice === null || (Number.isFinite(customPrice) && customPrice >= 0);
   const nameValid = form.name.trim().length > 1 && form.client.trim().length > 1;
-  const canSave = coordsValid && priceValid && nameValid && !saving;
+  const hosts = sharedHosts(hives, hive.id);
+  const shareValid =
+    form.placement !== "partage" ||
+    form.shareRole === "hote" ||
+    (form.shareRole === "heberge" && form.hostHiveId !== "");
+  const canSave = coordsValid && priceValid && nameValid && shareValid && !saving;
+
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -135,6 +152,12 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
         placement: form.placement,
         placementDetail: form.placementDetail.trim(),
         beekeeper: form.beekeeper.trim(),
+        shareRole: form.placement === "partage" ? form.shareRole : "",
+        hostHiveId:
+          form.placement === "partage" && form.shareRole === "heberge"
+            ? form.hostHiveId
+            : null,
+
         startDate: form.startDate,
         hiveCount: form.hiveCount,
         latitude: lat,
@@ -182,6 +205,18 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
                 <Row label="Implantation" value={placementLabel[hive.placement]} />
                 <Row label="Adresse exacte" value={hive.placementDetail} />
                 <Row label="Apiculteur partenaire" value={hive.beekeeper} />
+                {hive.placement === "partage" && (
+                  <>
+                    <Row label="Rôle" value={shareRoleLabel[hive.shareRole ?? ""]} />
+                    {hive.shareRole === "heberge" && (
+                      <Row
+                        label="Hébergé sur"
+                        value={hives.find((h) => h.id === hive.hostHiveId)?.name ?? "—"}
+                      />
+                    )}
+                  </>
+                )}
+
                 <Row
                   label="Début d'engagement"
                   value={new Date(hive.startDate).toLocaleDateString("fr-FR")}
@@ -301,6 +336,55 @@ export function HiveDetailDialog({ hive, isAdmin, onClose, onSave }: Props) {
                     className="h-11 rounded-xl bg-background"
                   />
                 </div>
+                {form.placement === "partage" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Rôle sur le rucher partagé</Label>
+                      <Select
+                        value={form.shareRole || undefined}
+                        onValueChange={(v) =>
+                          setForm((f) => ({
+                            ...f,
+                            shareRole: v as ShareRole,
+                            hostHiveId: v === "hote" ? "" : f.hostHiveId,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="h-11 rounded-xl bg-background">
+                          <SelectValue placeholder="Hôte ou hébergé" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SHARE_ROLES.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {r.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {form.shareRole === "heberge" && (
+                      <div className="space-y-2">
+                        <Label>Rucher hôte</Label>
+                        <Select
+                          value={form.hostHiveId || undefined}
+                          onValueChange={(v) => set("hostHiveId", v)}
+                        >
+                          <SelectTrigger className="h-11 rounded-xl bg-background">
+                            <SelectValue placeholder="Choisir un rucher partagé" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hosts.map((h) => (
+                              <SelectItem key={h.id} value={h.id}>
+                                {h.name} · {h.site}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="d-bk">Apiculteur partenaire</Label>
                   <Input

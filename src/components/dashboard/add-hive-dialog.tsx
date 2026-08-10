@@ -21,10 +21,13 @@ import {
   PLACEMENTS,
   PRICE_PER_HIVE,
   REGIONS,
+  SHARE_ROLES,
   annualRevenue,
   formatEuro,
+  sharedHosts,
   type Hive,
   type PlacementType,
+  type ShareRole,
 } from "@/lib/hives";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +38,7 @@ const steps = [
 ];
 
 type NewHive = Omit<Hive, "id" | "revenue" | "status">;
-type Props = { onCreate: (hive: NewHive) => void };
+type Props = { onCreate: (hive: NewHive) => void; hives: Hive[] };
 
 const emptyForm = {
   name: "",
@@ -45,6 +48,8 @@ const emptyForm = {
   placement: "site" as PlacementType,
   placementDetail: "",
   beekeeper: "",
+  shareRole: "" as ShareRole,
+  hostHiveId: "",
   startDate: new Date().toISOString().slice(0, 10),
   hiveCount: 4,
   latitude: "",
@@ -52,7 +57,8 @@ const emptyForm = {
   price: "",
 };
 
-export function AddHiveDialog({ onCreate }: Props) {
+export function AddHiveDialog({ onCreate, hives }: Props) {
+
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -64,11 +70,15 @@ export function AddHiveDialog({ onCreate }: Props) {
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  const hosts = sharedHosts(hives);
+
   const selectPlacement = (id: PlacementType) =>
     setForm((f) => ({
       ...f,
       placement: id,
       placementDetail: id === "friche" ? "" : f.placementDetail,
+      shareRole: id === "partage" ? f.shareRole : "",
+      hostHiveId: id === "partage" ? f.hostHiveId : "",
       site: id === "friche" ? FAREINS_SITE : f.site === FAREINS_SITE ? "" : f.site,
       region: id === "friche" ? FAREINS_REGION : f.region,
       beekeeper:
@@ -78,6 +88,12 @@ export function AddHiveDialog({ onCreate }: Props) {
             ? ""
             : f.beekeeper,
     }));
+
+  const shareValid =
+    form.placement !== "partage" ||
+    (form.shareRole === "hote" ||
+      (form.shareRole === "heberge" && form.hostHiveId.trim() !== ""));
+
 
   const lat = form.latitude.trim() === "" ? null : Number(form.latitude.replace(",", "."));
   const lng = form.longitude.trim() === "" ? null : Number(form.longitude.replace(",", "."));
@@ -110,7 +126,11 @@ export function AddHiveDialog({ onCreate }: Props) {
 
   const canContinue =
     (step === 0 && form.name.trim().length > 1) ||
-    (step === 1 && form.client.trim().length > 1 && form.site.trim().length > 1 && coordsValid) ||
+    (step === 1 &&
+      form.client.trim().length > 1 &&
+      form.site.trim().length > 1 &&
+      coordsValid &&
+      shareValid) ||
     (step === 2 && priceValid);
 
   const reset = () => {
@@ -120,7 +140,7 @@ export function AddHiveDialog({ onCreate }: Props) {
   };
 
   const submit = () => {
-    if (!coordsValid || !priceValid) return;
+    if (!coordsValid || !priceValid || !shareValid) return;
     onCreate({
       name: form.name.trim(),
       site: form.site.trim(),
@@ -129,6 +149,12 @@ export function AddHiveDialog({ onCreate }: Props) {
       placement: form.placement,
       placementDetail: form.placementDetail.trim(),
       beekeeper: form.beekeeper.trim(),
+      shareRole: form.placement === "partage" ? form.shareRole : "",
+      hostHiveId:
+        form.placement === "partage" && form.shareRole === "heberge"
+          ? form.hostHiveId
+          : null,
+
       startDate: form.startDate,
       hiveCount: form.hiveCount,
       latitude: lat,
@@ -265,6 +291,73 @@ export function AddHiveDialog({ onCreate }: Props) {
                       ))}
                     </div>
                   </div>
+
+                  {form.placement === "partage" && (
+                    <div className="space-y-3 rounded-2xl border border-border/60 bg-background p-3">
+                      <div className="space-y-2">
+                        <Label>Votre rôle sur le rucher partagé</Label>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {SHARE_ROLES.map((r) => (
+                            <button
+                              key={r.id}
+                              type="button"
+                              onClick={() =>
+                                setForm((f) => ({
+                                  ...f,
+                                  shareRole: r.id,
+                                  hostHiveId: r.id === "hote" ? "" : f.hostHiveId,
+                                }))
+                              }
+                              className={cn(
+                                "rounded-xl border px-3 py-2.5 text-center text-sm font-medium transition-all duration-300",
+                                form.shareRole === r.id
+                                  ? "border-primary bg-primary/10 text-primary shadow-sm"
+                                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                              )}
+                            >
+                              {r.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {form.shareRole === "heberge" && (
+                        <div className="space-y-2">
+                          <Label>Rucher hôte</Label>
+                          {hosts.length === 0 ? (
+                            <p className="text-xs text-destructive">
+                              Aucun rucher partagé hôte enregistré : créez d'abord le rucher
+                              hôte.
+                            </p>
+                          ) : (
+                            <Select
+                              value={form.hostHiveId}
+                              onValueChange={(v) => set("hostHiveId", v)}
+                            >
+                              <SelectTrigger className="h-11 rounded-xl bg-card">
+                                <SelectValue placeholder="Choisir un rucher partagé existant" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {hosts.map((h) => (
+                                  <SelectItem key={h.id} value={h.id}>
+                                    {h.name} · {h.site}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      )}
+
+                      {form.shareRole === "" && (
+                        <p className="text-xs text-muted-foreground">
+                          Indiquez si ce rucher accueille (hôte) ou est accueilli (hébergé).
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+
 
                   {placement.needsAddress && (
                     <div className="space-y-2">

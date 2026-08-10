@@ -158,7 +158,7 @@ function Dashboard() {
               )}
             </Link>
           </Button>
-          <AddHiveDialog onCreate={create} />
+          <AddHiveDialog onCreate={create} hives={hives} />
         </div>
       </motion.header>
 
@@ -233,10 +233,12 @@ function Dashboard() {
 
       <HiveDetailDialog
         hive={hives.find((h) => h.id === selectedId) ?? null}
+        hives={hives}
         isAdmin={isAdmin}
         onClose={() => setSelectedId(null)}
         onSave={updateHive}
       />
+
     </main>
   );
 }

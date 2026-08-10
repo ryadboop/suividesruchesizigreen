@@ -2,6 +2,9 @@ export type HiveStatus = "active" | "pending" | "renewal";
 
 export type PlacementType = "friche" | "site" | "partage";
 
+/** Rôle sur un rucher partagé : hôte (accueille) ou hébergé (accueilli). */
+export type ShareRole = "" | "hote" | "heberge";
+
 export type Hive = {
   id: string;
   name: string;
@@ -16,6 +19,10 @@ export type Hive = {
   placementDetail: string;
   /** Apiculteur partenaire en charge du rucher. */
   beekeeper: string;
+  /** Rucher partagé : hôte ou hébergé (vide si non applicable). */
+  shareRole: ShareRole;
+  /** Rucher partagé hôte sur lequel ce rucher est hébergé. */
+  hostHiveId: string | null;
   /** Coordonnées GPS du rucher (optionnelles). */
   latitude: number | null;
   longitude: number | null;
@@ -23,6 +30,25 @@ export type Hive = {
   price: number | null;
   status: HiveStatus;
 };
+
+export const SHARE_ROLES: Array<{ id: Exclude<ShareRole, "">; label: string }> = [
+  { id: "hote", label: "Hôte" },
+  { id: "heberge", label: "Hébergé" },
+];
+
+export const shareRoleLabel: Record<ShareRole, string> = {
+  "": "",
+  hote: "Hôte",
+  heberge: "Hébergé",
+};
+
+/** Ruchers partagés pouvant héberger d'autres ruchers. */
+export function sharedHosts(hives: Hive[], excludeId?: string) {
+  return hives.filter(
+    (h) => h.placement === "partage" && h.shareRole === "hote" && h.id !== excludeId,
+  );
+}
+
 
 
 export const REGIONS = [

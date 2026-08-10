@@ -20,6 +20,7 @@ export type Database = {
           client: string
           created_at: string
           hive_count: number
+          host_hive_id: string | null
           id: string
           latitude: number | null
           longitude: number | null
@@ -28,6 +29,7 @@ export type Database = {
           placement_detail: string
           price: number | null
           region: string
+          share_role: string
           site: string
           start_date: string
         }
@@ -36,6 +38,7 @@ export type Database = {
           client?: string
           created_at?: string
           hive_count?: number
+          host_hive_id?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -44,6 +47,7 @@ export type Database = {
           placement_detail?: string
           price?: number | null
           region?: string
+          share_role?: string
           site?: string
           start_date: string
         }
@@ -52,6 +56,7 @@ export type Database = {
           client?: string
           created_at?: string
           hive_count?: number
+          host_hive_id?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -60,10 +65,19 @@ export type Database = {
           placement_detail?: string
           price?: number | null
           region?: string
+          share_role?: string
           site?: string
           start_date?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "hives_host_hive_id_fkey"
+            columns: ["host_hive_id"]
+            isOneToOne: false
+            referencedRelation: "hives"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

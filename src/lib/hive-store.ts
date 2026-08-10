@@ -7,7 +7,9 @@ import {
   effectiveRevenue,
   type Hive,
   type PlacementType,
+  type ShareRole,
 } from "./hives";
+
 
 export type YearArchive = {
   year: number;
@@ -29,6 +31,8 @@ type HiveRow = {
   placement: string;
   placement_detail: string;
   beekeeper: string;
+  share_role: string | null;
+  host_hive_id: string | null;
   latitude: number | null;
   longitude: number | null;
   price: number | null;
@@ -46,6 +50,8 @@ function toHive(row: HiveRow): Hive {
     placement: row.placement as PlacementType,
     placementDetail: row.placement_detail,
     beekeeper: row.beekeeper,
+    shareRole: (row.share_role ?? "") as ShareRole,
+    hostHiveId: row.host_hive_id,
     latitude: row.latitude,
     longitude: row.longitude,
     price: row.price,
@@ -53,6 +59,7 @@ function toHive(row: HiveRow): Hive {
     status: computeStatus(row.start_date),
   };
 }
+
 
 
 /** Clôture automatique : archive l'année écoulée si ce n'est pas déjà fait. */
@@ -147,9 +154,12 @@ export function useHiveStore() {
         placement: hive.placement,
         placement_detail: hive.placementDetail,
         beekeeper: hive.beekeeper ?? "",
+        share_role: hive.shareRole ?? "",
+        host_hive_id: hive.hostHiveId,
         latitude: hive.latitude,
         longitude: hive.longitude,
         price: hive.price,
+
       });
       await load();
     },
@@ -173,6 +183,9 @@ export function useHiveStore() {
             placement_detail: patch.placementDetail,
           }),
           ...(patch.beekeeper !== undefined && { beekeeper: patch.beekeeper }),
+          ...(patch.shareRole !== undefined && { share_role: patch.shareRole }),
+          ...(patch.hostHiveId !== undefined && { host_hive_id: patch.hostHiveId }),
+
           ...(patch.latitude !== undefined && { latitude: patch.latitude }),
           ...(patch.longitude !== undefined && { longitude: patch.longitude }),
           ...(patch.price !== undefined && { price: patch.price }),
