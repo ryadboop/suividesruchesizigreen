@@ -21,10 +21,13 @@ import {
   PLACEMENTS,
   PRICE_PER_HIVE,
   REGIONS,
+  SHARE_ROLES,
   annualRevenue,
   formatEuro,
+  sharedHosts,
   type Hive,
   type PlacementType,
+  type ShareRole,
 } from "@/lib/hives";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +38,7 @@ const steps = [
 ];
 
 type NewHive = Omit<Hive, "id" | "revenue" | "status">;
-type Props = { onCreate: (hive: NewHive) => void };
+type Props = { onCreate: (hive: NewHive) => void; hives: Hive[] };
 
 const emptyForm = {
   name: "",
@@ -45,6 +48,8 @@ const emptyForm = {
   placement: "site" as PlacementType,
   placementDetail: "",
   beekeeper: "",
+  shareRole: "" as ShareRole,
+  hostHiveId: "",
   startDate: new Date().toISOString().slice(0, 10),
   hiveCount: 4,
   latitude: "",
@@ -52,7 +57,8 @@ const emptyForm = {
   price: "",
 };
 
-export function AddHiveDialog({ onCreate }: Props) {
+export function AddHiveDialog({ onCreate, hives }: Props) {
+
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
