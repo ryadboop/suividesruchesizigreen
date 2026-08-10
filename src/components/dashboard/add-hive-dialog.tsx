@@ -70,11 +70,15 @@ export function AddHiveDialog({ onCreate, hives }: Props) {
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  const hosts = sharedHosts(hives);
+
   const selectPlacement = (id: PlacementType) =>
     setForm((f) => ({
       ...f,
       placement: id,
       placementDetail: id === "friche" ? "" : f.placementDetail,
+      shareRole: id === "partage" ? f.shareRole : "",
+      hostHiveId: id === "partage" ? f.hostHiveId : "",
       site: id === "friche" ? FAREINS_SITE : f.site === FAREINS_SITE ? "" : f.site,
       region: id === "friche" ? FAREINS_REGION : f.region,
       beekeeper:
@@ -84,6 +88,12 @@ export function AddHiveDialog({ onCreate, hives }: Props) {
             ? ""
             : f.beekeeper,
     }));
+
+  const shareValid =
+    form.placement !== "partage" ||
+    (form.shareRole === "hote" ||
+      (form.shareRole === "heberge" && form.hostHiveId.trim() !== ""));
+
 
   const lat = form.latitude.trim() === "" ? null : Number(form.latitude.replace(",", "."));
   const lng = form.longitude.trim() === "" ? null : Number(form.longitude.replace(",", "."));
