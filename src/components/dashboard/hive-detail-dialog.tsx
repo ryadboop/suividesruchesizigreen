@@ -205,6 +205,18 @@ export function HiveDetailDialog({ hive, hives, isAdmin, onClose, onSave }: Prop
                 <Row label="Implantation" value={placementLabel[hive.placement]} />
                 <Row label="Adresse exacte" value={hive.placementDetail} />
                 <Row label="Apiculteur partenaire" value={hive.beekeeper} />
+                {hive.placement === "partage" && (
+                  <>
+                    <Row label="Rôle" value={shareRoleLabel[hive.shareRole ?? ""]} />
+                    {hive.shareRole === "heberge" && (
+                      <Row
+                        label="Hébergé sur"
+                        value={hives.find((h) => h.id === hive.hostHiveId)?.name ?? "—"}
+                      />
+                    )}
+                  </>
+                )}
+
                 <Row
                   label="Début d'engagement"
                   value={new Date(hive.startDate).toLocaleDateString("fr-FR")}
