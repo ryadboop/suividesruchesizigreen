@@ -154,9 +154,12 @@ export function useHiveStore() {
         placement: hive.placement,
         placement_detail: hive.placementDetail,
         beekeeper: hive.beekeeper ?? "",
+        share_role: hive.shareRole ?? "",
+        host_hive_id: hive.hostHiveId,
         latitude: hive.latitude,
         longitude: hive.longitude,
         price: hive.price,
+
       });
       await load();
     },
@@ -180,6 +183,9 @@ export function useHiveStore() {
             placement_detail: patch.placementDetail,
           }),
           ...(patch.beekeeper !== undefined && { beekeeper: patch.beekeeper }),
+          ...(patch.shareRole !== undefined && { share_role: patch.shareRole }),
+          ...(patch.hostHiveId !== undefined && { host_hive_id: patch.hostHiveId }),
+
           ...(patch.latitude !== undefined && { latitude: patch.latitude }),
           ...(patch.longitude !== undefined && { longitude: patch.longitude }),
           ...(patch.price !== undefined && { price: patch.price }),
