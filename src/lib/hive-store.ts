@@ -7,7 +7,9 @@ import {
   effectiveRevenue,
   type Hive,
   type PlacementType,
+  type ShareRole,
 } from "./hives";
+
 
 export type YearArchive = {
   year: number;
